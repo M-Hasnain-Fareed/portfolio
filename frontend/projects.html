@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projects — Muhammad Hasnain Fareed</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- Navigation Bar -->
+    <header class="navbar">
+        <div class="logo hover-wipe" onclick="window.location.href='/'" style="cursor: pointer; font-size: 0.95rem;">← Back to Home</div>
+        <nav class="nav-links">
+            <a href="/experience" class="hover-wipe">Experience</a>
+            <a href="/projects" class="hover-wipe" style="color: var(--accent-color);">Projects</a>
+            <a href="/community" class="hover-wipe">Community Work</a>
+            <a href="/research" class="hover-wipe" style="color: var(--accent-color);">Research</a>
+            <a href="/lets-talk" class="admin-link">Let's talk</a>
+        </nav>
+    </header>
+
+    <!-- Page Content -->
+    <main style="padding: 2rem 0 6rem 0; max-width: 1000px; margin: 0 auto;">
+        <h1 style="font-size: 3.5rem; margin-bottom: 1rem; letter-spacing: -1px;">Featured Projects.</h1>
+        <p style="color: var(--text-muted); font-size: 1.2rem; margin-bottom: 5rem;">Deep learning models, automated data pipelines, and full-stack software prototypes.</p>
+
+        <!-- Dynamic Container for Category Pages -->
+        <div style="display: flex; flex-direction: column; gap: 5rem;" id="category-container">
+            <p style="color: var(--text-muted);">Loading projects...</p>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <p>© 2026 Muhammad Hasnain Fareed. All rights reserved.</p>
+            <div class="footer-links">
+                <a href="/">Home</a>
+                <a href="https://github.com" target="_blank">github</a>
+                <a href="https://linkedin.com" target="_blank">linkedin</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            const container = document.getElementById("category-container");
+            
+            try {
+                const res = await fetch("/api/pages/projects/sections");
+                const sections = await res.json();
+
+                if (sections.length === 0) {
+                    container.innerHTML = `<p style="color: var(--text-muted);">No sections configured for projects yet. Use <a href="/admin" style="color: var(--accent-color);">/admin</a> to add sections!</p>`;
+                    return;
+                }
+
+                let html = `<div class="grid-container detail-split-layout">`;
+
+                for (const sec of sections) {
+                    const itemsRes = await fetch(`/api/items/${sec.section_id}`);
+                    const items = await itemsRes.json();
+
+                    items.forEach(item => {
+                        html += `
+                            <div data-id="${item._id}" class="detail-card-row">
+                                <div class="detail-card-content">
+                                    <div class="detail-heading-wrapper">
+                                        <span class="bullet"></span>
+                                        <h3 class="detail-title">${item.title}</h3>
+                                    </div>
+                        `;
+
+                        if (item.subtitle) {
+                            html += `<h4 style="color: var(--accent-color); font-size: 1.05rem; font-weight: 500; margin-bottom: 0.75rem;">${item.subtitle}</h4>`;
+                        }
+
+                        html += `<p>${item.description}</p>`;
+
+                        if (item.meta_tags && item.meta_tags.length > 0) {
+                            html += `<div class="card-meta" style="margin-top: 1rem; margin-bottom: 0.5rem;">`;
+                            item.meta_tags.forEach(tag => {
+                                html += `<span class="tag">${tag}</span>`;
+                            });
+                            html += `</div>`;
+                        }
+
+                        if (item.skills && item.skills.length > 0) {
+                            html += `<div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem;">`;
+                            item.skills.forEach(skill => {
+                                html += `<span style="font-size: 0.8rem; background: rgba(0, 255, 150, 0.08); border: 1px solid rgba(0, 255, 150, 0.2); color: #00ff96; padding: 0.3rem 0.7rem; border-radius: 4px;">${skill}</span>`;
+                            });
+                            html += `</div>`;
+                        }
+
+                        html += `
+                                </div>
+                                <div class="detail-card-media">
+                        `;
+
+                        if (item.image_url) {
+                            html += `<img src="${item.image_url}" alt="${item.title}" class="card-img-element">`;
+                        } else {
+                            html += `<div class="card-image-placeholder">[ Image Placeholder ]</div>`;
+                        }
+
+                        html += `
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+
+                html += `</div>`;
+                container.innerHTML = html;
+
+                // Handle URL query highlighting if navigated from a home page tile card
+                const urlParams = new URLSearchParams(window.location.search);
+                const highlightId = urlParams.get("highlight");
+                if (highlightId) {
+                    const targetCard = document.querySelector(`[data-id="${highlightId}"]`);
+                    if (targetCard) {
+                        setTimeout(() => {
+                            targetCard.scrollIntoView({ behavior: "smooth", block: "center" });
+                            targetCard.style.borderColor = "var(--accent-color)";
+                            setTimeout(() => {
+                                targetCard.style.borderColor = "var(--border-color)";
+                            }, 2000);
+                        }, 300);
+                    }
+                }
+
+            } catch (err) {
+                console.error("Error loading project details:", err);
+                container.innerHTML = `<p style="color: var(--text-muted);">Failed to load projects.</p>`;
+            }
+        });
+    </script>
+</body>
+</html>

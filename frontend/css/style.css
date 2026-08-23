@@ -1,0 +1,576 @@
+:root {
+    --bg-color: #121212;
+    --card-bg: #1a1a1a;
+    --text-primary: #f4f4f4;
+    --text-muted: #888888;
+    --accent-color: #ff3333;
+    --border-color: #262626;
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    line-height: 1.6;
+    padding: 0 5%;
+    overflow-x: hidden;
+    animation: pageEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes pageEntrance {
+    0% {
+        opacity: 0;
+        transform: translateY(20px) scale(0.98);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Navbar */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2.5rem 0;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 4rem;
+    position: relative;
+    z-index: 1001;
+}
+
+.logo {
+    font-weight: 700;
+    letter-spacing: 2px;
+    font-size: 1.1rem;
+    transition: opacity 0.2s ease;
+}
+
+.logo:hover {
+    opacity: 0.8;
+}
+
+.nav-links {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+}
+
+/* Right-to-Left Smooth White-to-Red Hover Animation (Navbar & Skill Tags) */
+.hover-wipe {
+    position: relative;
+    color: var(--text-primary);
+    text-decoration: none;
+    font-size: 0.95rem;
+    cursor: pointer;
+    background: linear-gradient(to left, var(--accent-color) 50%, var(--text-primary) 50%);
+    background-size: 200% 100%;
+    background-position: left bottom;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    transition: background-position 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hover-wipe:hover {
+    background-position: right bottom;
+}
+.admin-link {
+    color: var(--accent-color) !important;
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: opacity 0.2s;
+}
+.admin-link:hover { opacity: 0.8; }
+
+/* Hamburger Button (Hidden on Desktop) */
+.hamburger-btn {
+    display: none;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 28px;
+    height: 18px;
+    cursor: pointer;
+    z-index: 1002;
+}
+
+.hamburger-btn span {
+    display: block;
+    width: 100%;
+    height: 2px;
+    background-color: var(--text-primary);
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+/* Mobile Dropdown Menu Overlay */
+.mobile-menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: var(--bg-color);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 10%;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mobile-menu-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.mobile-menu-links {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.mob-link {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-decoration: none;
+    letter-spacing: -1px;
+    transition: color 0.2s ease;
+    cursor: pointer;
+}
+
+.mob-link:hover {
+    color: var(--accent-color);
+}
+
+.hamburger-btn.active span:nth-child(1) {
+    transform: translateY(8px) rotate(45deg);
+}
+.hamburger-btn.active span:nth-child(2) {
+    transform: translateY(-8px) rotate(-45deg);
+}
+
+/* Hero Section */
+.hero {
+    padding: 4rem 0 3rem 0;
+    max-width: 900px;
+}
+
+.hero-title {
+    font-size: 4rem;
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -1px;
+    margin-bottom: 1.5rem;
+}
+
+.typed-text {
+    color: var(--accent-color);
+    border-right: 3px solid var(--accent-color);
+    animation: blink-cursor 0.75s infinite;
+    padding-right: 2px;
+}
+
+@keyframes blink-cursor {
+    0%, 100% { border-color: transparent; }
+    50% { border-color: var(--accent-color); }
+}
+
+.hero-subtitle {
+    font-size: 1.25rem;
+    color: var(--text-muted);
+    max-width: 600px;
+    margin-bottom: 2.5rem;
+}
+
+/* Action Buttons Container */
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 5rem;
+}
+
+.btn-primary {
+    background-color: var(--accent-color);
+    color: #fff;
+    padding: 0.8rem 1.75rem;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-primary:hover { transform: translateY(-2px); opacity: 0.9; }
+
+.btn-secondary {
+    background-color: transparent;
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    padding: 0.8rem 1.75rem;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+}
+
+.btn-secondary:hover { border-color: #555; transform: translateY(-2px); }
+
+/* Sections */
+.portfolio-section {
+    margin-bottom: 6rem;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 2.5rem;
+}
+
+.bullet {
+    width: 8px;
+    height: 8px;
+    background-color: var(--accent-color);
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.section-header h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+}
+
+/* Horizontal Slider Container (Home Page) */
+.grid-container {
+    display: flex;
+    gap: 2rem;
+    overflow-x: auto;
+    scroll-snap-align: start;
+    padding-top: 6px;
+    padding-bottom: 1.5rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) transparent;
+}
+
+.grid-container::-webkit-scrollbar { height: 6px; }
+.grid-container::-webkit-scrollbar-thumb { background-color: var(--border-color); border-radius: 10px; }
+
+/* Split Layout for Detail Pages (Projects, Experience, Research, Community) */
+.grid-container.detail-split-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 4rem;
+    overflow-x: visible;
+}
+
+.detail-card-row {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 3rem;
+    align-items: center;
+    background: transparent;
+    border: none;
+    padding: 0;
+}
+
+.detail-card-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.detail-card-media {
+    width: 100%;
+}
+
+/* Project Cards (Home Page) */
+.project-card {
+    flex: 0 0 380px;
+    scroll-snap-align: start;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 2.5rem;
+    cursor: pointer;
+    position: relative;
+    box-shadow: inset 0 0 0 1px transparent;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.project-card:hover {
+    transform: translateY(-4px);
+    border-color: #555;
+}
+
+.card-meta {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.tag {
+    font-size: 0.75rem;
+    background-color: rgba(255, 255, 255, 0.05);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    color: var(--text-muted);
+    border: 1px solid var(--border-color);
+}
+
+/* Specific styling for skill tags utilizing hover-wipe */
+span.tag.hover-wipe {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+    display: inline-block;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+}
+
+.project-card h3 {
+    word-break: break-word;
+    overflow-wrap: break-word;
+    font-size: 1.25rem;
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.project-card p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+}
+
+/* Uniform Image & Placeholder Container Sizing */
+.card-img-element, 
+.card-image-placeholder {
+    width: 100%;
+    height: 280px;
+    object-fit: cover;
+    border-radius: 14px;
+    border: 1px solid var(--border-color);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.project-card .card-img-element,
+.project-card .card-image-placeholder {
+    height: 185px;
+    margin-top: 1rem;
+    border-radius: 8px;
+}
+
+.card-image-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+/* Bulletproof Custom Interactive Cursor Ring */
+.custom-cursor {
+    position: absolute;
+    top: -100px;
+    left: -100px;
+    width: 30px;
+    height: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 50%;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: width 0.2s ease, height 0.2s ease, background-color 0.2s ease;
+}
+
+body.hovering .custom-cursor {
+    width: 70px;
+    height: 70px;
+    background-color: rgba(255, 255, 255, 0.08);
+    border-color: transparent;
+}
+
+/* Footer */
+footer {
+    padding: 3rem 0;
+    border-top: 1px solid var(--border-color);
+    margin-top: 4rem;
+}
+
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.footer-links {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.footer-links a {
+    color: var(--text-muted);
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.footer-links a:hover { color: var(--text-primary); }
+
+/* Skill Pills */
+.skill-pill {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 30px;
+    padding: 0.75rem 1.5rem;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    cursor: pointer;
+    display: inline-block;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
+}
+
+.skill-pill:hover {
+    transform: translateY(-4px);
+    border-color: #555;
+}
+
+/* Responsive Layout & Clean Headings for Detail Pages */
+.detail-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 3rem;
+    align-items: center;
+}
+
+.detail-heading-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.detail-title {
+    font-size: 2rem;
+    font-weight: 650;
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+/* Responsive Mobile Queries */
+@media (max-width: 768px) {
+    body { padding: 0 4%; }
+    .navbar { padding: 1.5rem 0; margin-bottom: 2rem; }
+    .nav-links { display: none; }
+    .hamburger-btn { display: flex; }
+    .hero-title { font-size: 2.5rem; }
+    .hero-subtitle { font-size: 1.1rem; }
+    .action-buttons { flex-direction: column; gap: 0.75rem; }
+    .project-card { flex: 0 0 280px; padding: 1.75rem; }
+    .custom-cursor { display: none !important; }
+
+    main h1 {
+        font-size: 2.5rem !important;
+    }
+
+    .detail-card-row {
+        grid-template-columns: 1fr !important;
+        gap: 2rem !important;
+    }
+
+    .detail-title {
+        font-size: 1.6rem !important;
+    }
+}
+
+/* --- Modal Popup Styling --- */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+
+.modal-overlay.active {
+    display: flex;
+}
+
+.modal-content {
+    background: var(--card-bg, #121212);
+    border: 1px solid var(--border-color, #333);
+    border-radius: 14px;
+    padding: 2.5rem;
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+}
+
+.modal-close {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    background: none;
+    border: none;
+    color: var(--text-muted, #888);
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.modal-close:hover {
+    color: #fff;
+}
+
+/* --- Centered Skill Pill Layout --- */
+.skills-diamond-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 1rem 0;
+}
+
+.skills-row {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    width: 100%;
+}

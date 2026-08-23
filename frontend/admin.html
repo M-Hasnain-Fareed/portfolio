@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Admin Panel</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body style="padding: 2rem; max-width: 1000px; margin: 0 auto; background: var(--bg-color); color: #fff;">
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem;">
+        <h1 style="font-size: 2.5rem; letter-spacing: -1px;">Portfolio Admin Dashboard.</h1>
+        <div style="display: flex; gap: 1.5rem; align-items: center;">
+            <a href="/" class="hover-wipe" style="color: var(--accent-color); text-decoration: none;">← View Live Site</a>
+            <button id="logout-btn" class="btn-secondary" style="border-color: var(--accent-color); color: var(--accent-color); padding: 0.4rem 1rem; font-size: 0.9rem; cursor: pointer; border-radius: 6px; background: transparent;">
+                Logout
+            </button>
+        </div>
+    </div>
+
+    <!-- Step 1: Page Selector -->
+    <section style="background: var(--card-bg); border: 1px solid var(--border-color); padding: 2rem; border-radius: 14px; margin-bottom: 2rem;">
+        <h2 style="font-size: 1.25rem; margin-bottom: 1rem;">1. Select Target Page</h2>
+        <select id="page-selector" style="width: 100%; padding: 0.75rem 1rem; background: var(--bg-color); border: 1px solid var(--border-color); color: #fff; border-radius: 8px; font-size: 1rem;">
+            <option value="" disabled selected>-- Choose a page --</option>
+            <option value="home">Home Page</option>
+            <option value="experience">Experience Page</option>
+            <option value="projects">Projects Page</option>
+            <option value="community">Community Page</option>
+            <option value="research">Research Page</option>
+        </select>
+    </section>
+
+    <div id="workspace" style="display: none;">
+        <!-- Step 2: Manage Sections -->
+        <section style="background: var(--card-bg); border: 1px solid var(--border-color); padding: 2rem; border-radius: 14px; margin-bottom: 2rem;">
+            <h2 id="sections-heading" style="font-size: 1.25rem; margin-bottom: 1.5rem;">2. Manage Sections</h2>
+            <div id="page-sections-container" style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2rem;">
+                <!-- Populated dynamically -->
+            </div>
+
+            <h3 id="new-section-heading" style="font-size: 1.1rem; margin-bottom: 1rem; color: var(--accent-color);">+ Add New Section</h3>
+            <form id="section-form" style="display: flex; flex-direction: column; gap: 1rem;">
+                <div>
+                    <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.4rem;">Section ID (e.g. featured-projects)</label>
+                    <input type="text" id="sec-id" required style="width: 100%; padding: 0.75rem; background: var(--bg-color); border: 1px solid var(--border-color); color: #fff; border-radius: 8px;">
+                </div>
+                <div>
+                    <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.4rem;">Section Title (e.g. Featured Projects)</label>
+                    <input type="text" id="sec-title" required style="width: 100%; padding: 0.75rem; background: var(--bg-color); border: 1px solid var(--border-color); color: #fff; border-radius: 8px;">
+                </div>
+                <div>
+                    <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.4rem;">Precedence Order</label>
+                    <input type="number" id="sec-order" value="1" required style="width: 100%; padding: 0.75rem; background: var(--bg-color); border: 1px solid var(--border-color); color: #fff; border-radius: 8px;">
+                </div>
+
+                <!-- Home Page Specific Options -->
+                <div id="home-page-options" style="display: none; border-top: 1px solid var(--border-color); padding-top: 1rem; margin-top: 0.5rem;">
+                    <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.4rem;">Is this a Skills Section?</label>
+                    <select id="sec-is-skills" style="width: 100%; padding: 0.75rem; background: var(--bg-color); border: 1px solid var(--border-color); color: #fff; border-radius: 8px; margin-bottom: 1rem;">
+                        <option value="false">No (Standard Section)</option>
+                        <option value="true">Yes (Render Skills as Diamond Tags)</option>
+                    </select>
+
+                    <!-- Skills Direct Input Field (Shows only when Skills is selected) -->
+                    <div id="section-skills-input-wrapper" style="display: none; margin-bottom: 1rem;">
+                        <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.4rem;">Skills (comma separated, e.g. Python, FastAPI, Docker)</label>
+                        <input type="text" id="sec-skills-list" placeholder="Python, FastAPI, Docker..." style="width: 100%; padding: 0.75rem; background: var(--bg-color); border: 1px solid var(--border-color); color: #fff; border-radius: 8px;">
+                    </div>
+
+                    <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.4rem;">Map to Source Page (Tiles Content)</label>
+                    <select id="sec-mapped-page" style="width: 100%; padding: 0.75rem; background: var(--bg-color); border: 1px solid var(--border-color); color: #fff; border-radius: 8px;">
+                        <option value="">-- None (Custom Section) --</option>
+                        <option value="projects">Projects Page</option>
+                        <option value="experience">Experience Page</option>
+                        <option value="community">Community Page</option>
+                        <option value="research">Research Page</option>
+                    </select>
+                </div>
+
+                <button type="submit" style="background: var(--accent-color); color: #000; font-weight: 600; padding: 0.75rem; border: none; border-radius: 8px; cursor: pointer; margin-top: 0.5rem;">Save Section</button>
+            </form>
+        </section>
+
+        <!-- Step 3: Add Content Item -->
+        <section id="item-creation-section" style="background: var(--card-bg); border: 1px solid var(--border-color); padding: 2rem; border-radius: 14px;">
+            <h2 id="items-heading" style="font-size: 1.25rem; margin-bottom: 1.5rem;">3. Add Content Item</h2>
+            <form id="item-form" style="display: flex; flex-direction: column; gap: 1.25rem;">
+                <input type="hidden" id="item-id">
+                <div style="display: flex; gap: 1rem;">
+                    <div style="flex: 1;">
+                        <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.4rem;">Target Section</label>
+                        <select id="item-section-id" required style="width: 100%; padding: 0.75rem; background: var(--bg-color); border: 1px solid var(--border-color); color: #fff; border-radius: 8px;">
+                            <option value="" disabled selected>Select Target Section...</option>
+                        </select>
+                    </div>
+                    <div style="width: 120px;">
+                        <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.4rem;">Order</label>
+                        <input type="number" id="item-order" value="0" required style="width: 100%; padding: 0.75rem; background: var(--bg-color); border: 1px solid var(--border-color); color: #fff; border-radius: 8px;">
+                    </div>
+                </div>
+
+                <div>
+                    <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.4rem;">Item Title</label>
+                    <input type="text" id="item-title" placeholder="Item Title" required style="width: 100%; padding: 0.75rem; background: var(--bg-color); border: 1px solid var(--border-color); color: #fff; border-radius: 8px;">
+                </div>
+
+                <div>
+                    <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.4rem;">Subtitle / Company / Role</label>
+                    <input type="text" id="item-subtitle" placeholder="Subtitle / Company / Role" style="width: 100%; padding: 0.75rem; background: var(--bg-color); border: 1px solid var(--border-color); color: #fff; border-radius: 8px;">
+                </div>
+
+                <div>
+                    <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.4rem;">Metadata Tags (comma separated)</label>
+                    <input type="text" id="item-meta" placeholder="Metadata Tags (comma separated)" style="width: 100%; padding: 0.75rem; background: var(--bg-color); border: 1px solid var(--border-color); color: #fff; border-radius: 8px;">
+                </div>
+
+                <div>
+                    <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.4rem;">Skill Tags (comma separated, e.g. Python, FastAPI)</label>
+                    <input type="text" id="item-skills" placeholder="Skill Tags (comma separated, e.g. Python, FastAPI)" style="width: 100%; padding: 0.75rem; background: var(--bg-color); border: 1px solid var(--border-color); color: #fff; border-radius: 8px;">
+                </div>
+
+                <div>
+                    <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.4rem;">Detailed Description</label>
+                    <textarea id="item-desc" rows="4" placeholder="Detailed description..." required style="width: 100%; padding: 0.75rem; background: var(--bg-color); border: 1px solid var(--border-color); color: #fff; border-radius: 8px; resize: vertical;"></textarea>
+                </div>
+
+                <div id="image-upload-wrapper">
+                    <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.4rem;">Item Image</label>
+                    <input type="file" id="item-image" style="color: var(--text-muted);">
+                </div>
+
+                <button type="submit" style="background: var(--accent-color); color: #000; font-weight: 600; padding: 0.75rem; border: none; border-radius: 8px; cursor: pointer;">Save Content Item</button>
+            </form>
+        </section>
+    </div>
+
+    <!-- Edit Section Modal Popup -->
+    <div id="edit-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button type="button" class="modal-close" id="close-modal">&times;</button>
+            <h2 id="modal-heading" style="margin-bottom: 1.5rem; font-size: 1.5rem;">Edit Section</h2>
+            <form id="edit-modal-form" style="display: flex; flex-direction: column; gap: 1rem;">
+                <input type="hidden" id="edit-section-id">
+                <input type="hidden" id="edit-page-name">
+                <input type="hidden" id="edit-item-id">
+                
+                <div>
+                    <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.4rem;">Section Title</label>
+                    <input type="text" id="edit-sec-title" required style="width: 100%; padding: 0.75rem; background: var(--bg-color); border: 1px solid var(--border-color); color: #fff; border-radius: 8px;">
+                </div>
+
+                <div>
+                    <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.4rem;">Precedence Order</label>
+                    <input type="number" id="edit-sec-order" required style="width: 100%; padding: 0.75rem; background: var(--bg-color); border: 1px solid var(--border-color); color: #fff; border-radius: 8px;">
+                </div>
+
+                <!-- Home-specific edit fields -->
+                <div id="edit-home-options" style="display: none; flex-direction: column; gap: 1rem;">
+                    <div>
+                        <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.4rem;">Is this a Skills Section?</label>
+                        <select id="edit-sec-is-skills" style="width: 100%; padding: 0.75rem; background: var(--bg-color); border: 1px solid var(--border-color); color: #fff; border-radius: 8px;">
+                            <option value="false">No</option>
+                            <option value="true">Yes</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.4rem;">Map to Source Page</label>
+                        <select id="edit-sec-mapped-page" style="width: 100%; padding: 0.75rem; background: var(--bg-color); border: 1px solid var(--border-color); color: #fff; border-radius: 8px;">
+                            <option value="">-- None --</option>
+                            <option value="projects">Projects Page</option>
+                            <option value="experience">Experience Page</option>
+                            <option value="community">Community Page</option>
+                            <option value="research">Research Page</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Interactive Skills Manager inside modal -->
+                <div id="edit-skills-wrapper" style="display: none; flex-direction: column; gap: 1rem; border-top: 1px solid var(--border-color); padding-top: 1rem; margin-top: 0.5rem;">
+                    <label style="font-size: 0.85rem; color: var(--text-muted); display: block;">Manage Skills</label>
+                    <div id="skills-list-container" style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 200px; overflow-y: auto;">
+                        <!-- Dynamic skill rows -->
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                        <input type="text" id="new-skill-input" placeholder="New skill name..." style="flex: 1; padding: 0.5rem; background: var(--bg-color); border: 1px solid var(--border-color); color: #fff; border-radius: 6px;">
+                        <button type="button" id="add-skill-btn" style="background: var(--accent-color); color: #000; font-weight: 600; padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer;">Add Skill</button>
+                    </div>
+                </div>
+
+                <!-- Regular Page Item fields inside modal -->
+                <div id="edit-item-fields-wrapper" style="display: flex; flex-direction: column; gap: 1rem; border-top: 1px solid var(--border-color); padding-top: 1rem; margin-top: 0.5rem;">
+                    <div>
+                        <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.4rem;">Item Title</label>
+                        <input type="text" id="edit-item-title" style="width: 100%; padding: 0.75rem; background: var(--bg-color); border: 1px solid var(--border-color); color: #fff; border-radius: 8px;">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.4rem;">Subtitle / Company / Role</label>
+                        <input type="text" id="edit-item-subtitle" style="width: 100%; padding: 0.75rem; background: var(--bg-color); border: 1px solid var(--border-color); color: #fff; border-radius: 8px;">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.4rem;">Metadata Tags (comma separated)</label>
+                        <input type="text" id="edit-item-meta" style="width: 100%; padding: 0.75rem; background: var(--bg-color); border: 1px solid var(--border-color); color: #fff; border-radius: 8px;">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.4rem;">Skill Tags (comma separated)</label>
+                        <input type="text" id="edit-item-skills" style="width: 100%; padding: 0.75rem; background: var(--bg-color); border: 1px solid var(--border-color); color: #fff; border-radius: 8px;">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.4rem;">Detailed Description</label>
+                        <textarea id="edit-item-desc" rows="4" style="width: 100%; padding: 0.75rem; background: var(--bg-color); border: 1px solid var(--border-color); color: #fff; border-radius: 8px; resize: vertical;"></textarea>
+                    </div>
+                    <div>
+                        <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.4rem;">Replace Image</label>
+                        <input type="file" id="edit-item-image" style="color: var(--text-muted);">
+                    </div>
+                </div>
+
+                <button type="submit" style="margin-top: 1rem; background: var(--accent-color); color: #000; font-weight: 600; padding: 0.75rem; border: none; border-radius: 8px; cursor: pointer;">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Inline Logout Handler Script -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const logoutBtn = document.getElementById("logout-btn");
+            if (logoutBtn) {
+                logoutBtn.addEventListener("click", async () => {
+                    try {
+                        const res = await fetch("/api/admin/logout", {
+                            method: "POST"
+                        });
+                        
+                        if (res.ok) {
+                            window.location.href = "/login";
+                        } else {
+                            alert("Error logging out. Please try again.");
+                        }
+                    } catch (err) {
+                        console.error("Logout error:", err);
+                        alert("Server error during logout.");
+                    }
+                });
+            }
+        });
+    </script>
+
+    <!-- External Admin Script File -->
+    <script src="javascript/admin.js"></script>
+</body>
+</html>

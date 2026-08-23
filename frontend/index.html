@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Muhammad Hasnain Fareed — AI Engineer & Automation Developer</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- Navigation Bar -->
+    <header class="navbar">
+        <div class="logo" id="home-btn" style="cursor: pointer;">HASNAIN FAREED</div>
+        <nav class="nav-links">
+            <a href="experience" class="hover-wipe">Experience</a>
+            <a href="projects" class="hover-wipe">Projects</a>
+            <a href="community" class="hover-wipe">Community Work</a>
+            <a href="/research" class="hover-wipe" style="color: var(--accent-color);">Research</a>
+            <a href="lets-talk" id="nav-lets-talk" class="admin-link">Let's talk</a>
+        </nav>
+        <!-- Mobile Hamburger Menu Button -->
+        <div class="hamburger-btn" id="hamburger-toggle">
+            <span></span>
+            <span></span>
+        </div>
+    </header>
+
+    <!-- Mobile Full-Screen Dropdown Overlay Menu -->
+    <div class="mobile-menu-overlay" id="mobile-menu">
+        <div class="mobile-menu-links">
+            <a href="#experience" class="mob-link">Experience</a>
+            <a href="#projects" class="mob-link">Projects</a>
+            <a href="#community" class="mob-link">Community Work</a>
+            <a href="#" id="mob-lets-talk" class="mob-link" style="color: var(--accent-color);">Let's talk</a>
+            <a href="/admin.html" class="mob-link" style="font-size: 1.2rem; color: var(--text-muted);">Admin Panel</a>
+        </div>
+    </div>
+
+    <!-- Main Portfolio Feed (Home View) -->
+    <main id="dynamic-container">
+        <!-- Sections will be rendered here dynamically -->
+    </main>
+
+    <!-- Transition Detail Page View (Hidden by default) -->
+    <section id="detail-view" class="detail-page" style="display: none;">
+        <button id="detail-back-btn" class="back-link">← Back to Home</button>
+        <div id="detail-content">
+            <!-- Dynamic details will load here -->
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <p>© 2026 Muhammad Hasnain Fareed. All rights reserved.</p>
+            <div class="footer-links">
+                <a href="#" id="footer-lets-talk">let's talk</a>
+                <a href="https://github.com" target="_blank">github</a>
+                <a href="www.linkedin.com/in/hasnain-fareed" target="_blank">linkedin</a>
+                <a href="/admin" style="color: var(--accent-color);">admin</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="javascript/app.js"></script>
+</body>
+</html>

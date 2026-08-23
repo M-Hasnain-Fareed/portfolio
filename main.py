@@ -2,23 +2,27 @@ import os
 import secrets
 from fastapi import FastAPI, UploadFile, File, Form, Body, HTTPException, Depends, Cookie, Response, status
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, RedirectResponse
+from fastapi.responses import FileResponse, RedirectResponse, Response
 from typing import List, Optional, Dict, Any
 from database import db
 from bson import ObjectId
-import aiofiles
-import uuid
 import re
+import cloudinary
+import cloudinary.uploader
+import urllib.request
 
 app = FastAPI(title="Portfolio Backend", version="1.0")
 
-# Ensure upload directory exists FIRST before mounting
-os.makedirs("frontend/uploads", exist_ok=True)
+# --- CLOUDINARY CONFIGURATION ---
+cloudinary.config(
+    cloud_name = "lvkvjfva",
+    api_key = "845322467652286",
+    api_secret = "4qU9Po7CjFH_LnU1uy9t7w7vHtk"
+)
 
-# Mount static folders for assets and uploads
+# Mount static folders for assets (local uploads folder removed for hosting compatibility)
 app.mount("/css", StaticFiles(directory="frontend/css"), name="css")
 app.mount("/javascript", StaticFiles(directory="frontend/javascript"), name="javascript")
-app.mount("/uploads", StaticFiles(directory="frontend/uploads"), name="uploads")
 
 # --- ADMIN AUTHENTICATION CONFIG & SESSION STORE ---
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
@@ -41,6 +45,7 @@ async def read_admin_html(admin_session: Optional[str] = Cookie(None)):
     if not admin_session or admin_session not in active_sessions:
         return RedirectResponse(url="/login", status_code=303)
     return FileResponse(os.path.join("frontend", "admin.html"))
+
 @app.post("/api/admin/login")
 async def admin_login(response: Response, username: str = Form(...), password: str = Form(...)):
     """Authenticate admin and set a secure session cookie"""
@@ -143,7 +148,44 @@ async def submit_contact(name: str = Form(...), email: str = Form(...), message:
     return {"status": "success", "message_id": str(result.inserted_id)}
 
 
-# --- ADMIN CRUD & UPLOAD API ROUTES (PROTECTED WITH verify_admin) ---
+# --- CV DOWNLOAD ENDPOINT (Public) ---
+@app.get("/api/cv/download")
+async def download_cv():
+    """Fetch the saved Cloudinary URL and redirect the browser to download it"""
+    setting = await db.settings.find_one({"key": "cv_url"})
+    if not setting or not setting.get("value"):
+        raise HTTPException(status_code=404, detail="CV not found. Please upload one via the admin panel.")
+    
+    # Directly redirect the user to the secure Cloudinary file link
+    return RedirectResponse(setting["value"])
+
+
+# --- ADMIN CRUD & CLOUD UPLOAD API ROUTES (PROTECTED WITH verify_admin) ---
+@app.post("/api/admin/upload-cv")
+async def upload_cv(file: UploadFile = File(...), auth: bool = Depends(verify_admin)):
+    """Upload CV PDF directly to Cloudinary and store URL in MongoDB"""
+    try:
+        file_content = await file.read()
+        
+        upload_result = cloudinary.uploader.upload(
+            file_content, 
+            resource_type="auto",
+            format="pdf",
+            public_id="Hasnain_Fareed_CV",
+            overwrite=True,
+            type="upload"
+        )
+        secure_url = upload_result.get("secure_url")
+        
+        await db.settings.update_one(
+            {"key": "cv_url"}, 
+            {"$set": {"value": secure_url}}, 
+            upsert=True
+        )
+        
+        return {"status": "success", "message": "CV successfully uploaded to cloud!", "url": secure_url}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/admin/sections")
 async def save_section(section_data: dict = Body(...), auth: bool = Depends(verify_admin)):
@@ -184,17 +226,17 @@ async def save_portfolio_item(
     image: Optional[UploadFile] = File(None),
     auth: bool = Depends(verify_admin)
 ):
-    """Create or update a portfolio item with correct precedence shifting"""
+    """Create or update a portfolio item, uploading image files to Cloudinary for safe hosting"""
     image_url = ""
     if image and image.filename:
-        file_ext = image.filename.split(".")[-1]
-        unique_filename = f"{uuid.uuid4()}.{file_ext}"
-        file_path = os.path.join("frontend", "uploads", unique_filename)
-        
-        async with aiofiles.open(file_path, "wb") as buffer:
-            content = await image.read()
-            await buffer.write(content)
-        image_url = f"/uploads/{unique_filename}"
+        try:
+            upload_result = cloudinary.uploader.upload(
+                image.file, 
+                resource_type="image"
+            )
+            image_url = upload_result.get("secure_url")
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Image upload failed: {str(e)}")
 
     meta_list = [tag.strip() for tag in meta_tags.split(",") if tag.strip()]
     skills_list = [skill.strip() for skill in skills.split(",") if skill.strip()]

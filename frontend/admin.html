@@ -31,6 +31,20 @@
         </select>
     </section>
 
+    <!-- CV Upload Management Section -->
+    <section style="background: var(--card-bg); border: 1px solid var(--border-color); padding: 2rem; border-radius: 14px; margin-bottom: 2rem;">
+        <h2 style="font-size: 1.25rem; margin-bottom: 1rem;">Manage Resume / CV</h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">Upload a new PDF resume. This will instantly update the downloadable CV file for visitors.</p>
+        
+        <form id="cv-upload-form">
+            <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                <input type="file" id="cv-file-input" accept=".pdf" required style="color: var(--text-primary);">
+                <button type="submit" class="btn-primary" style="cursor: pointer;">Upload New CV</button>
+            </div>
+        </form>
+        <p id="cv-upload-status" style="margin-top: 1rem; font-size: 0.9rem;"></p>
+    </section>
+
     <div id="workspace" style="display: none;">
         <!-- Step 2: Manage Sections -->
         <section style="background: var(--card-bg); border: 1px solid var(--border-color); padding: 2rem; border-radius: 14px; margin-bottom: 2rem;">
@@ -221,7 +235,7 @@
         </div>
     </div>
 
-    <!-- Inline Logout Handler Script -->
+    <!-- Script handlers for logout and CV upload -->
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const logoutBtn = document.getElementById("logout-btn");
@@ -240,6 +254,49 @@
                     } catch (err) {
                         console.error("Logout error:", err);
                         alert("Server error during logout.");
+                    }
+                });
+            }
+
+            // CV Upload Form Handler
+            const cvForm = document.getElementById("cv-upload-form");
+            if (cvForm) {
+                cvForm.addEventListener("submit", async (e) => {
+                    e.preventDefault();
+                    const fileInput = document.getElementById("cv-file-input");
+                    const statusEl = document.getElementById("cv-upload-status");
+
+                    if (!fileInput.files[0]) {
+                        alert("Please select a PDF file first.");
+                        return;
+                    }
+
+                    const formData = new FormData();
+                    formData.append("file", fileInput.files[0]);
+
+                    statusEl.textContent = "Uploading to cloud...";
+                    statusEl.style.color = "var(--text-muted)";
+
+                    try {
+                        const response = await fetch("/api/admin/upload-cv", {
+                            method: "POST",
+                            body: formData
+                        });
+
+                        const result = await response.json();
+
+                        if (response.ok) {
+                            statusEl.textContent = "Success! CV updated and hosted securely in the cloud.";
+                            statusEl.style.color = "#00ff96";
+                            fileInput.value = "";
+                        } else {
+                            statusEl.textContent = `Error: ${result.detail || "Failed to upload CV."}`;
+                            statusEl.style.color = "var(--accent-color)";
+                        }
+                    } catch (err) {
+                        console.error("CV upload network error:", err);
+                        statusEl.textContent = "Network error while uploading CV.";
+                        statusEl.style.color = "var(--accent-color)";
                     }
                 });
             }

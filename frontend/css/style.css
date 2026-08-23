@@ -258,7 +258,7 @@ body {
     letter-spacing: -0.5px;
 }
 
-/* Horizontal Slider Container (Home Page) */
+/* Horizontal Slider Container (Home Page) - Scrollbar Hidden */
 .grid-container {
     display: flex;
     gap: 2rem;
@@ -266,12 +266,13 @@ body {
     scroll-snap-align: start;
     padding-top: 6px;
     padding-bottom: 1.5rem;
-    scrollbar-width: thin;
-    scrollbar-color: var(--border-color) transparent;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
-.grid-container::-webkit-scrollbar { height: 6px; }
-.grid-container::-webkit-scrollbar-thumb { background-color: var(--border-color); border-radius: 10px; }
+.grid-container::-webkit-scrollbar {
+    display: none;
+}
 
 /* Split Layout for Detail Pages (Projects, Experience, Research, Community) */
 .grid-container.detail-split-layout {
@@ -308,7 +309,7 @@ body {
     background-color: var(--card-bg);
     border: 1px solid var(--border-color);
     border-radius: 14px;
-    padding: 2.5rem;
+    padding: 3.5rem;
     cursor: pointer;
     position: relative;
     box-shadow: inset 0 0 0 1px transparent;
@@ -452,6 +453,7 @@ footer {
     color: var(--text-primary);
     cursor: pointer;
     display: inline-block;
+    white-space: nowrap;
     transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
 }
 
@@ -555,25 +557,44 @@ footer {
     color: #fff;
 }
 
-/* --- Centered Skill Pill Layout --- */
-.skills-diamond-container {
+/* --- Dual Continuous Ticker Layout for Skills --- */
+.skills-marquee-wrapper {
     display: flex;
     flex-direction: column;
-    align-items: center;
     gap: 1rem;
     width: 100%;
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 1rem 0;
+    overflow: hidden;
+    position: relative;
+    padding: 0.5rem 0;
 }
 
-.skills-row {
+.marquee-track {
     display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    width: 100%;
+    gap: 1rem;
+    width: max-content;
+    will-change: transform;
 }
+
+/* Upper slider: moves Left to Right continuously without stopping on hover */
+.marquee-track.marquee-ltr {
+    animation: scrollLTR 30s linear infinite;
+}
+
+/* Lower slider: moves Right to Left continuously without stopping on hover */
+.marquee-track.marquee-rtl {
+    animation: scrollRTL 30s linear infinite;
+}
+
+@keyframes scrollLTR {
+    0% { transform: translateX(-50%); }
+    100% { transform: translateX(0); }
+}
+
+@keyframes scrollRTL {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
 /* Glass tile base style */
 .glass-tile {
     background: rgba(255, 255, 255, 0.03);
@@ -588,7 +609,6 @@ footer {
     transform: perspective(1000px);
 }
 
-/* Green cursor-following spotlight effect */
 .glass-tile::before {
     content: '';
     position: absolute;
@@ -598,7 +618,7 @@ footer {
     height: 100%;
     background: radial-gradient(
         800px circle at var(--mouse-x) var(--mouse-y),
-        rgba(34, 197, 94, 0.15), /* Green glow effect */
+        rgba(34, 197, 94, 0.15),
         transparent 40%
     );
     opacity: 0;
@@ -609,4 +629,25 @@ footer {
 
 .glass-tile:hover::before {
     opacity: 1;
+}
+
+.contact-email-btn {
+    background-color: var(--accent-color);
+    color: #fff;
+    padding: 0.9rem 2rem;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+    box-shadow: 0 4px 15px rgba(255, 51, 51, 0.3);
+}
+
+.contact-email-btn:hover {
+    transform: translateY(-2px);
+    opacity: 0.9;
 }

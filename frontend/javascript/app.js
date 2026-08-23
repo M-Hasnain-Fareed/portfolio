@@ -43,14 +43,12 @@ document.addEventListener("DOMContentLoaded", async () => {
                 const x = e.clientX - rect.left;
                 const y = e.clientY - rect.top;
 
-                // Set CSS variables for green radial spotlight gradient position
                 card.style.setProperty('--mouse-x', `${x}px`);
                 card.style.setProperty('--mouse-y', `${y}px`);
 
-                // 3D tilt calculation towards the cursor
                 const centerX = rect.width / 2;
                 const centerY = rect.height / 2;
-                const rotateX = -((y - centerY) / centerY) * 8; // Max 8 deg tilt
+                const rotateX = -((y - centerY) / centerY) * 8;
                 const rotateY = ((x - centerX) / centerX) * 8;
 
                 card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
@@ -92,22 +90,41 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const container = document.getElementById("dynamic-container") || document.querySelector("main");
 
-    // If we are on the lets-talk page, keep its static layout and exit early
     if (pageName === "lets-talk") {
         setupGlobalHoverEffects();
         setupGlassTiltEffects();
         return;
     }
     
-    function renderSingleLineSkills(skillsList) {
+    function renderDualMarqueeSkills(skillsList) {
         if (!skillsList || skillsList.length === 0) return "";
-        let html = `<div style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1rem;">`;
-        skillsList.forEach(skill => {
-            const skillName = typeof skill === "object" ? skill.name : skill;
-            html += `<span class="skill-pill">${skillName}</span>`;
-        });
-        html += `</div>`;
-        return html;
+        
+        // Split skills roughly into two arrays for upper and lower rows
+        const mid = Math.ceil(skillsList.length / 2);
+        const upperSkills = skillsList.slice(0, mid);
+        const lowerSkills = skillsList.slice(mid);
+
+        // Helper to generate a repeated block of pills for seamless looping
+        const generatePillsHtml = (arr) => {
+            let pillsStr = "";
+            arr.forEach(skill => {
+                const skillName = typeof skill === "object" ? skill.name : skill;
+                pillsStr += `<span class="skill-pill">${skillName}</span>`;
+            });
+            // Duplicate pills to create a seamless infinite scroll effect
+            return pillsStr + pillsStr;
+        };
+
+        return `
+            <div class="skills-marquee-wrapper">
+                <div class="marquee-track marquee-ltr">
+                    ${generatePillsHtml(upperSkills)}
+                </div>
+                <div class="marquee-track marquee-rtl">
+                    ${generatePillsHtml(lowerSkills)}
+                </div>
+            </div>
+        `;
     }
 
     // --- STANDARD HOME PAGE GRID CARD RENDERER ---
@@ -152,18 +169,14 @@ document.addEventListener("DOMContentLoaded", async () => {
         items.forEach(item => {
             html += `<div class="detail-card-row" data-id="${item._id}"><div class="detail-card-content">`;
             
-            // 1. Title with red bullet point
             html += `<div class="detail-heading-wrapper"><span class="bullet"></span><h3 class="detail-title">${item.title}</h3></div>`;
             
-            // 2. Subtitle / Location in Red
             if (item.subtitle) {
                 html += `<h4 style="color: var(--accent-color); font-size: 1.05rem; font-weight: 500; margin-bottom: 0.75rem;">${item.subtitle}</h4>`;
             }
             
-            // 3. Description (Always rendered right after subtitle)
             html += `<p>${item.description}</p>`;
             
-            // 4. Green Skill Pills at the bottom (handles both meta_tags and skills fields seamlessly)
             const tagsToDisplay = (item.skills && item.skills.length > 0) ? item.skills : item.meta_tags;
             if (tagsToDisplay && tagsToDisplay.length > 0) {
                 html += `<div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem;">`;
@@ -259,7 +272,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                         const skillsRes = await fetch("/api/skills");
                         const skills = await skillsRes.json();
                         const skillNames = skills.length > 0 ? skills.map(s => s.name) : ["Python", "FastAPI", "Flutter", "TensorFlow & Keras", "n8n Automation", "Docker", "MongoDB Atlas", "SQL & Databases", "Groq & X.AI APIs", "Git & GitHub"];
-                        htmlOutput += renderSingleLineSkills(skillNames);
+                        htmlOutput += renderDualMarqueeSkills(skillNames);
                         htmlOutput += `</section>`;
                         continue;
                     }
@@ -276,7 +289,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             if (pageName === "home") {
                 initTypewriter();
-                setupGlassTiltEffects(); // Initialize glassmorphism & tilt effect for home grid cards
+                setupGlassTiltEffects();
             }
             setupGlobalHoverEffects();
             setupScrollAnimations();

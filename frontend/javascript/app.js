@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             cursor.style.top = `${e.pageY}px`;
         });
     }
-
+    
     function setupGlobalHoverEffects() {
         if (!hasMouse) return;
         const interactiveElements = document.querySelectorAll(".project-card, .detail-card-row, .skill-pill, .tag");
@@ -29,8 +29,41 @@ document.addEventListener("DOMContentLoaded", async () => {
             });
         });
     }
-
+    
     setupGlobalHoverEffects();
+
+    // --- GLASS TILT & GREEN SPOTLIGHT EFFECT HANDLER ---
+    function setupGlassTiltEffects() {
+        if (!hasMouse) return;
+        const cards = document.querySelectorAll(".project-card");
+        
+        cards.forEach(card => {
+            // Add the glass-tile class dynamically
+            card.classList.add("glass-tile");
+
+            card.addEventListener("mousemove", (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                // Set CSS variables for green radial spotlight gradient position
+                card.style.setProperty('--mouse-x', `${x}px`);
+                card.style.setProperty('--mouse-y', `${y}px`);
+
+                // 3D tilt calculation towards the cursor
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                const rotateX = -((y - centerY) / centerY) * 8; // Max 8 deg tilt
+                const rotateY = ((x - centerX) / centerX) * 8;
+
+                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+            });
+
+            card.addEventListener("mouseleave", () => {
+                card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+            });
+        });
+    }
 
     const hamburger = document.getElementById("hamburger-toggle");
     const mobileMenu = document.getElementById("mobile-menu");
@@ -236,6 +269,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             if (pageName === "home") {
                 initTypewriter();
+                setupGlassTiltEffects(); // Initialize glassmorphism & tilt effect for home grid cards
             }
             setupGlobalHoverEffects();
             setupScrollAnimations();

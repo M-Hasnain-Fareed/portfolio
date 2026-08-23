@@ -43,9 +43,15 @@
                 <p style="font-size: 1.15rem; font-weight: 500; margin-top: 0.25rem;">Lahore, Pakistan</p>
             </div>
         </div>
-        <a href="mailto:hasnainfareed555@gmail.com" class="contact-email-btn">
-    Contact Me →
-</a>
+
+        <!-- Contact Button with Top Padding & Clipboard/Gmail Fallback -->
+        <div style="margin-top: 3rem; text-align: center;">
+            <a href="mailto:hasnainfareed555@gmail.com" 
+               class="contact-email-btn" 
+               onclick="copyEmailAndOpen(event, 'hasnainfareed555@gmail.com')">
+                Contact Me →
+            </a>
+        </div>
     </main>
 
     <!-- Footer -->
@@ -84,6 +90,17 @@
                 }
             });
         });
+
+        // Copy email helper and webmail opener
+        function copyEmailAndOpen(event, email) {
+            event.preventDefault();
+            navigator.clipboard.writeText(email).then(() => {
+                alert("Email address (hasnainfareed555@gmail.com) copied to clipboard!");
+                window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${email}`, '_blank');
+            }).catch(err => {
+                window.location.href = `mailto:${email}`;
+            });
+        }
     </script>
     <script src="javascript/app.js"></script>
 </body>

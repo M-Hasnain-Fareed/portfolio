@@ -38,6 +38,27 @@ document.addEventListener("DOMContentLoaded", () => {
     const editHomeOptions = document.getElementById("edit-home-options");
     const editSkillsWrapper = document.getElementById("edit-skills-wrapper");
 
+    // =========================================================================
+    // BULLETPROOF EVENT DELEGATION: Catches the click no matter when/where it renders
+    // =========================================================================
+    document.addEventListener("click", (e) => {
+        if (e.target && (e.target.id === "clear-item-image" || e.target.id === "clear-edit-item-image")) {
+            e.preventDefault();
+            if (confirm("Are you sure you want to remove this image?")) {
+                const fileInput = document.getElementById("edit-item-image");
+                const flagInput = document.getElementById("remove-image-flag");
+                
+                if (fileInput) fileInput.value = "";
+                if (flagInput) {
+                    flagInput.value = "true";
+                    console.log("Remove image flag explicitly set to true");
+                }
+                alert("Image marked for removal. Click 'Save Changes' to apply.");
+            }
+        }
+    });
+    // =========================================================================
+
     async function loadPageData() {
         const selectedPage = pageSelector.value;
         if (!selectedPage) {
@@ -164,7 +185,9 @@ document.addEventListener("DOMContentLoaded", () => {
         formData.append("order", document.getElementById("item-order").value);
 
         const imageFile = document.getElementById("item-image").files[0];
-        if (imageFile) formData.append("image", imageFile);
+        if (imageFile) {
+            formData.append("image", imageFile);
+        }
 
         const res = await fetch("/api/admin/items", {
             method: "POST",
@@ -182,15 +205,17 @@ document.addEventListener("DOMContentLoaded", () => {
     // Open Edit Modal Logic
     window.openEditModal = async (sectionId, pageName) => {
         try {
-            const secRes = await fetch(`/api/pages/${pageName}/sections`);
-            const sections = await secRes.json();
-            const sec = sections.find(s => s.section_id === sectionId);
+            const pageSecRes = await fetch(`/api/pages/${pageName}/sections`);
+            const pageSections = await pageSecRes.json();
+            const sec = pageSections.find(s => s.section_id === sectionId);
             if (!sec) return alert("Section not found.");
 
             document.getElementById("edit-section-id").value = sec.section_id;
             document.getElementById("edit-page-name").value = pageName;
             document.getElementById("edit-sec-title").value = sec.title;
             document.getElementById("edit-sec-order").value = sec.order;
+            document.getElementById("remove-image-flag").value = "false";
+            document.getElementById("edit-item-image").value = "";
 
             if (pageName === "home") {
                 editHomeOptions.style.display = "flex";
@@ -321,7 +346,15 @@ document.addEventListener("DOMContentLoaded", () => {
             formData.append("order", document.getElementById("edit-sec-order").value);
 
             const imageFile = document.getElementById("edit-item-image").files[0];
-            if (imageFile) formData.append("image", imageFile);
+            if (imageFile) {
+                formData.append("image", imageFile);
+            }
+
+            // Ensures remove flag gets sent properly to main.py
+            const removeFlagEl = document.getElementById("remove-image-flag");
+            if (removeFlagEl && removeFlagEl.value === "true") {
+                formData.append("remove_image", "true");
+            }
 
             await fetch("/api/admin/items", { method: "POST", body: formData });
         }

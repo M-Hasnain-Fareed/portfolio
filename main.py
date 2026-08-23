@@ -1,26 +1,21 @@
 import os
 import secrets
+import base64
+import httpx
 from fastapi import FastAPI, UploadFile, File, Form, Body, HTTPException, Depends, Cookie, Response, status
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, RedirectResponse, Response
+from fastapi.responses import FileResponse, RedirectResponse
 from typing import List, Optional, Dict, Any
 from database import db
 from bson import ObjectId
 import re
-import cloudinary
-import cloudinary.uploader
-import urllib.request
 
 app = FastAPI(title="Portfolio Backend", version="1.0")
 
-# --- CLOUDINARY CONFIGURATION ---
-cloudinary.config(
-    cloud_name = "lvkvjfva",
-    api_key = "845322467652286",
-    api_secret = "4qU9Po7CjFH_LnU1uy9t7w7vHtk"
-)
+# --- IMGBB API CONFIGURATION (For Portfolio Images) ---
+IMGBB_API_KEY = "3047152fd7c4a86855437e5a8daa9424"  # ImgBB API key
 
-# Mount static folders for assets (local uploads folder removed for hosting compatibility)
+# Mount static folders for assets
 app.mount("/css", StaticFiles(directory="frontend/css"), name="css")
 app.mount("/javascript", StaticFiles(directory="frontend/javascript"), name="javascript")
 
@@ -148,45 +143,15 @@ async def submit_contact(name: str = Form(...), email: str = Form(...), message:
     return {"status": "success", "message_id": str(result.inserted_id)}
 
 
-# --- CV DOWNLOAD ENDPOINT (Public) ---
+# --- CV DOWNLOAD ENDPOINT (Google Drive Direct Redirect) ---
 @app.get("/api/cv/download")
 async def download_cv():
-    """Fetch the saved Cloudinary URL and redirect the browser to download it"""
-    setting = await db.settings.find_one({"key": "cv_url"})
-    if not setting or not setting.get("value"):
-        raise HTTPException(status_code=404, detail="CV not found. Please upload one via the admin panel.")
-    
-    # Directly redirect the user to the secure Cloudinary file link
-    return RedirectResponse(setting["value"])
+    """Redirect user directly to your Google Drive CV file"""
+    direct_drive_url = "https://drive.google.com/uc?export=download&id=1OvfRpTyYb64CprCjxGbr7Y19Ma10kErw"
+    return RedirectResponse(direct_drive_url)
 
 
-# --- ADMIN CRUD & CLOUD UPLOAD API ROUTES (PROTECTED WITH verify_admin) ---
-@app.post("/api/admin/upload-cv")
-async def upload_cv(file: UploadFile = File(...), auth: bool = Depends(verify_admin)):
-    """Upload CV PDF directly to Cloudinary and store URL in MongoDB"""
-    try:
-        file_content = await file.read()
-        
-        upload_result = cloudinary.uploader.upload(
-            file_content, 
-            resource_type="auto",
-            format="pdf",
-            public_id="Hasnain_Fareed_CV",
-            overwrite=True,
-            type="upload"
-        )
-        secure_url = upload_result.get("secure_url")
-        
-        await db.settings.update_one(
-            {"key": "cv_url"}, 
-            {"$set": {"value": secure_url}}, 
-            upsert=True
-        )
-        
-        return {"status": "success", "message": "CV successfully uploaded to cloud!", "url": secure_url}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
+# --- ADMIN CRUD & PORTFOLIO ITEM UPLOAD API ROUTES ---
 @app.post("/api/admin/sections")
 async def save_section(section_data: dict = Body(...), auth: bool = Depends(verify_admin)):
     """Add or update a portfolio section with automatic precedence shifting"""
@@ -223,18 +188,33 @@ async def save_portfolio_item(
     skills: str = Form(""),
     description: str = Form(...),
     order: int = Form(0),
+    remove_image: Optional[str] = Form(None),  # <--- MOVED ABOVE IMAGE TO PREVENT PARSING DROPOFF
     image: Optional[UploadFile] = File(None),
     auth: bool = Depends(verify_admin)
 ):
-    """Create or update a portfolio item, uploading image files to Cloudinary for safe hosting"""
-    image_url = ""
+    print(f"DEBUG ---> remove_image received: {remove_image}")
+    
+    """Create or update a portfolio item, uploading images to ImgBB or removing them"""
+    image_url = None
     if image and image.filename:
         try:
-            upload_result = cloudinary.uploader.upload(
-                image.file, 
-                resource_type="image"
-            )
-            image_url = upload_result.get("secure_url")
+            image_content = await image.read()
+            base64_image = base64.b64encode(image_content).decode("utf-8")
+            
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    "https://api.imgbb.com/1/upload",
+                    data={
+                        "key": IMGBB_API_KEY,
+                        "image": base64_image,
+                    }
+                )
+                
+                result_json = response.json()
+                if response.status_code == 200 and result_json.get("success"):
+                    image_url = result_json["data"]["url"]
+                else:
+                    raise HTTPException(status_code=500, detail="Failed to upload image to ImgBB.")
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Image upload failed: {str(e)}")
 
@@ -251,17 +231,24 @@ async def save_portfolio_item(
         "order": order
     }
 
-    if image_url:
-        item_doc["image_url"] = image_url
-
     if item_id:
+        update_ops = {"$set": item_doc}
+        
+        if image_url:
+            update_ops["$set"]["image_url"] = image_url
+        elif remove_image == "true":
+            update_ops["$unset"] = {"image_url": ""}
+
         await db.portfolio_items.update_many(
             {"section_id": section_id, "order": {"$gte": order}, "_id": {"$ne": ObjectId(item_id)}},
             {"$inc": {"order": 1}}
         )
-        await db.portfolio_items.update_one({"_id": ObjectId(item_id)}, {"$set": item_doc})
+        await db.portfolio_items.update_one({"_id": ObjectId(item_id)}, update_ops)
         return {"status": "success", "message": "Item updated successfully"}
     else:
+        if image_url:
+            item_doc["image_url"] = image_url
+            
         await db.portfolio_items.update_many(
             {"section_id": section_id, "order": {"$gte": order}},
             {"$inc": {"order": 1}}

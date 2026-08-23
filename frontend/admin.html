@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portfolio Admin Panel</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body style="padding: 2rem; max-width: 1000px; margin: 0 auto; background: var(--bg-color); color: #fff;">
 
@@ -139,10 +139,11 @@
                     <textarea id="item-desc" rows="4" placeholder="Detailed description..." required style="width: 100%; padding: 0.75rem; background: var(--bg-color); border: 1px solid var(--border-color); color: #fff; border-radius: 8px; resize: vertical;"></textarea>
                 </div>
 
-                <div id="image-upload-wrapper">
+                <div>
                     <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.4rem;">Item Image</label>
-                    <input type="file" id="item-image" style="color: var(--text-muted);">
-                </div>
+                    <div style="display: flex; gap: 1rem; align-items: center;">
+                        <input type="file" id="item-image" accept="image/*" style="color: var(--text-muted); flex: 1;">
+                        <button type="button" id="clear-item-image" class="remove-img-btn" style="background: rgba(255,0,0,0.1); border: 1px solid rgba(255,0,0,0.3); color: #ff6b6b; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.85rem; pointer-events: auto !important;">Remove Image</button>                </div>
 
                 <button type="submit" style="background: var(--accent-color); color: #000; font-weight: 600; padding: 0.75rem; border: none; border-radius: 8px; cursor: pointer;">Save Content Item</button>
             </form>
@@ -158,6 +159,7 @@
                 <input type="hidden" id="edit-section-id">
                 <input type="hidden" id="edit-page-name">
                 <input type="hidden" id="edit-item-id">
+                <input type="hidden" id="remove-image-flag" value="false">
                 
                 <div>
                     <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.4rem;">Section Title</label>
@@ -226,7 +228,10 @@
                     </div>
                     <div>
                         <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.4rem;">Replace Image</label>
-                        <input type="file" id="edit-item-image" style="color: var(--text-muted);">
+                        <div style="display: flex; gap: 1rem; align-items: center;">
+                            <input type="file" id="edit-item-image" accept="image/*" style="color: var(--text-muted); flex: 1;">
+                            <button type="button" id="clear-edit-item-image" style="background: rgba(255,0,0,0.1); border: 1px solid rgba(255,0,0,0.3); color: #ff6b6b; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.85rem;">Remove Image</button>
+                        </div>
                     </div>
                 </div>
 
@@ -257,6 +262,16 @@
                     }
                 });
             }
+
+            // Clear image button handlers
+            document.getElementById("clear-item-image")?.addEventListener("click", () => {
+                document.getElementById("item-image").value = "";
+            });
+
+            document.getElementById("clear-edit-item-image")?.addEventListener("click", () => {
+                document.getElementById("edit-item-image").value = "";
+                document.getElementById("remove-image-flag").value = "true";
+            });
 
             // CV Upload Form Handler
             const cvForm = document.getElementById("cv-upload-form");

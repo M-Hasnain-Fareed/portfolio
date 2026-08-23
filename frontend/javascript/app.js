@@ -17,15 +17,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     
     function setupGlobalHoverEffects() {
         if (!hasMouse) return;
-        const interactiveElements = document.querySelectorAll(".project-card, .detail-card-row, .skill-pill, .tag");
+        const interactiveElements = document.querySelectorAll(".project-card, .detail-card-row, .skill-pill, .tag, a, button");
         interactiveElements.forEach((el) => {
             el.addEventListener("mouseenter", () => {
                 document.body.classList.add("hovering");
-                if(cursor) cursor.textContent = "View";
             });
             el.addEventListener("mouseleave", () => {
                 document.body.classList.remove("hovering");
-                if(cursor) cursor.textContent = "";
             });
         });
     }
@@ -35,10 +33,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     // --- GLASS TILT & GREEN SPOTLIGHT EFFECT HANDLER ---
     function setupGlassTiltEffects() {
         if (!hasMouse) return;
-        const cards = document.querySelectorAll(".project-card");
+        const cards = document.querySelectorAll(".project-card, .glass-tile");
         
         cards.forEach(card => {
-            // Add the glass-tile class dynamically
             card.classList.add("glass-tile");
 
             card.addEventListener("mousemove", (e) => {
@@ -65,6 +62,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     }
 
+    setupGlassTiltEffects();
+
     const hamburger = document.getElementById("hamburger-toggle");
     const mobileMenu = document.getElementById("mobile-menu");
     const mobLinks = document.querySelectorAll(".mob-link");
@@ -89,8 +88,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     else if (path.includes("projects")) pageName = "projects";
     else if (path.includes("community")) pageName = "community";
     else if (path.includes("research")) pageName = "research";
+    else if (path.includes("lets-talk")) pageName = "lets-talk";
 
     const container = document.getElementById("dynamic-container") || document.querySelector("main");
+
+    // If we are on the lets-talk page, keep its static layout and exit early
+    if (pageName === "lets-talk") {
+        setupGlobalHoverEffects();
+        setupGlassTiltEffects();
+        return;
+    }
     
     function renderSingleLineSkills(skillsList) {
         if (!skillsList || skillsList.length === 0) return "";

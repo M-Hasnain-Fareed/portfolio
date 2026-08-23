@@ -10,7 +10,7 @@
 
     <!-- Navigation Bar -->
     <header class="navbar">
-        <div class="logo hover-wipe" onclick="window.location.href='index.html'" style="cursor: pointer; font-size: 0.95rem;">← Back to Home</div>
+        <div class="logo" onclick="window.location.href='/'" style="cursor: pointer;">HASNAIN FAREED</div>
         <nav class="nav-links">
             <a href="experience" class="hover-wipe">Experience</a>
             <a href="projects" class="hover-wipe">Projects</a>
@@ -20,28 +20,31 @@
         </nav>
     </header>
 
-    <!-- Page Content -->
-    <main style="padding: 2rem 0 6rem 0; max-width: 800px;">
-        <h1 style="font-size: 3.5rem; margin-bottom: 1.5rem; letter-spacing: -1.5px; line-height: 1.1;">Let's Talk.</h1>
-        <p style="font-size: 1.25rem; color: var(--text-muted); margin-bottom: 3rem;">
-            Have a project in mind, an automation challenge, or a machine learning opportunity? Let's build something exceptional together. Reach out directly via email or phone.
-        </p>
+    <!-- Centered Content Wrapper -->
+    <main style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; padding: 2rem; text-align: center;">
+        
+        <div style="max-width: 700px; margin-bottom: 3rem;">
+            <a href="/" class="back-link" style="display: inline-block; margin-bottom: 1.5rem;">← Back to Home</a>
+            <h1 style="font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 700; letter-spacing: -1.5px; margin-bottom: 0.75rem;">Let's Talk.</h1>
+            <p style="color: var(--text-muted); font-size: 1.15rem;">Have a project in mind, an automation challenge, or a machine learning opportunity? Let's build something exceptional together. Reach out directly via email or phone.</p>
+        </div>
 
-        <!-- Contact Details Block -->
-        <div style="display: flex; flex-direction: column; gap: 2rem; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 3rem;">
-            <div>
-                <span style="color: var(--text-muted); font-size: 0.85rem; letter-spacing: 1px; display: block; margin-bottom: 0.5rem;">EMAIL</span>
-                <a href="mailto:hasnainfareed555@gmail.com" style="font-size: 1.5rem; color: var(--text-primary); text-decoration: none; font-weight: 500;" class="hover-wipe">hasnainfareed555@gmail.com</a>
+        <!-- Glass Tile Contact Card -->
+        <div class="glass-tile" style="width: 100%; max-width: 550px; padding: 2.5rem; text-align: left; margin: 0 auto;">
+            <div style="margin-bottom: 1.5rem;">
+                <span style="font-size: 0.8rem; letter-spacing: 1px; color: var(--text-muted); text-transform: uppercase;">Email</span>
+                <p style="font-size: 1.15rem; font-weight: 500; margin-top: 0.25rem;"><a href="mailto:hasnainfareed555@gmail.com" style="color: inherit; text-decoration: none;">hasnainfareed555@gmail.com</a></p>
+            </div>
+            <div style="margin-bottom: 1.5rem;">
+                <span style="font-size: 0.8rem; letter-spacing: 1px; color: var(--text-muted); text-transform: uppercase;">Phone / WhatsApp</span>
+                <p style="font-size: 1.15rem; font-weight: 500; margin-top: 0.25rem;">+92 312 4433465</p>
             </div>
             <div>
-                <span style="color: var(--text-muted); font-size: 0.85rem; letter-spacing: 1px; display: block; margin-bottom: 0.5rem;">PHONE / WHATSAPP</span>
-                <a href="tel:+923124433465" style="font-size: 1.5rem; color: var(--text-primary); text-decoration: none; font-weight: 500;">+92 312 4433465</a>
-            </div>
-            <div>
-                <span style="color: var(--text-muted); font-size: 0.85rem; letter-spacing: 1px; display: block; margin-bottom: 0.5rem;">LOCATION</span>
-                <span style="font-size: 1.5rem; color: var(--text-primary); font-weight: 500;">Lahore, Pakistan</span>
+                <span style="font-size: 0.8rem; letter-spacing: 1px; color: var(--text-muted); text-transform: uppercase;">Location</span>
+                <p style="font-size: 1.15rem; font-weight: 500; margin-top: 0.25rem;">Lahore, Pakistan</p>
             </div>
         </div>
+
     </main>
 
     <!-- Footer -->
@@ -49,13 +52,37 @@
         <div class="footer-content">
             <p>© 2026 Muhammad Hasnain Fareed. All rights reserved.</p>
             <div class="footer-links">
-                <a href="index.html">Home</a>
                 <a href="https://github.com" target="_blank">github</a>
                 <a href="https://linkedin.com" target="_blank">linkedin</a>
+                <a href="/admin" style="color: var(--accent-color);">admin</a>
             </div>
         </div>
     </footer>
 
-    <script src="javascript/a"></script>
+    <!-- Mouse Tilt & Green Spotlight Script for Glass Tiles -->
+    <script>
+        document.addEventListener('mousemove', (e) => {
+            const tiles = document.querySelectorAll('.glass-tile');
+            tiles.forEach(tile => {
+                const rect = tile.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                tile.style.setProperty('--mouse-x', `${x}px`);
+                tile.style.setProperty('--mouse-y', `${y}px`);
+
+                if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    const rotateX = -((y - centerY) / centerY) * 6;
+                    const rotateY = ((x - centerX) / centerX) * 6;
+
+                    tile.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.01, 1.01, 1.01)`;
+                } else {
+                    tile.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+                }
+            });
+        });
+    </script>
 </body>
 </html>

@@ -190,24 +190,13 @@ document.addEventListener("DOMContentLoaded", () => {
         return html;
     }
 
-    // --- CONCURRENT INDEPENDENT STREAMING ARCHITECTURE ---
+    // --- STAGGERED SEQUENTIAL LIVE STREAMING ARCHITECTURE ---
     async function loadPageProgressively() {
         if (!container) return;
 
-        // 1. INSTANTLY RENDER THE APP SHELL (0ms Delay)
+        // Since the hero is now hardcoded in HTML, just initialize the typewriter effect
         if (pageName === "home") {
-            container.innerHTML = `
-                <section class="hero">
-                    <h1 class="hero-title">AI/ML & n8n<br><span id="typewriter" class="typed-text"></span></h1>
-                    <p class="hero-subtitle">BS Artificial Intelligence student at UMT Lahore focused on machine learning, data analytics, and AI-driven automation workflows.</p>
-                    <div class="action-buttons">
-                        <a href="/api/cv/download" id="download-cv-btn" class="btn-primary">Download CV</a>
-                        <a href="/lets-talk" class="btn-secondary">Let's Talk →</a>
-                    </div>
-                </section>
-                <div id="dynamic-portfolio-sections"></div>
-            `;
-            initTypewriter(); 
+            initTypewriter();
         } else {
             let pageTitle = "Experience";
             let pageSubtitle = "Professional internships, leadership roles, and military recommendations.";
@@ -222,18 +211,21 @@ document.addEventListener("DOMContentLoaded", () => {
                 pageSubtitle = "Academic studies, technical reports, and scientific papers.";
             }
 
-            container.innerHTML = `
-                <div style="margin-bottom: 4rem;">
+            const dynamicContainerHeader = document.getElementById("dynamic-portfolio-sections");
+            if(dynamicContainerHeader) {
+                const headerDiv = document.createElement("div");
+                headerDiv.style.marginBottom = "4rem";
+                headerDiv.innerHTML = `
                     <h1 style="font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 700; letter-spacing: -1.5px; margin-bottom: 0.75rem;">${pageTitle}.</h1>
                     <p style="color: var(--text-muted); font-size: 1.15rem; max-width: 700px;">${pageSubtitle}</p>
-                </div>
-                <div id="dynamic-portfolio-sections"></div>
-            `;
+                `;
+                container.insertBefore(headerDiv, dynamicContainerHeader);
+            }
         }
 
         const dynamicContainer = document.getElementById("dynamic-portfolio-sections");
+        if (!dynamicContainer) return;
 
-        // 2. FETCH SECTIONS METADATA AND STREAM INDEPENDENTLY AS DATA ARRIVES
         try {
             const res = await fetch(`/api/pages/${pageName}/sections`);
             let sections = await res.json();
@@ -244,7 +236,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            // Create placeholder slots instantly in correct sorted order to preserve layout
+            // Create placeholder slots instantly in correct sorted order
             sections.forEach(sec => {
                 const placeholder = document.createElement("div");
                 placeholder.id = `section-slot-${sec.section_id}`;
@@ -254,10 +246,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 dynamicContainer.appendChild(placeholder);
             });
 
-            // Fire independent async fetches so each section renders the exact microsecond its data resolves
-            sections.forEach(async (sec) => {
+            // Sequential loop with a micro-delay to bypass Render proxy batching and stream sections smoothly one by one
+            for (const sec of sections) {
                 const slot = document.getElementById(`section-slot-${sec.section_id}`);
-                if (!slot) return;
+                if (!slot) continue;
 
                 try {
                     let items = [];
@@ -294,7 +286,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         sectionHtml += `</section>`;
                     }
 
-                    // Render this specific section immediately upon completion
+                    // Render and fade in this specific section immediately
                     slot.innerHTML = sectionHtml;
                     slot.style.opacity = "1";
                     slot.style.transform = "translateY(0)";
@@ -303,10 +295,13 @@ document.addEventListener("DOMContentLoaded", () => {
                     setupGlobalHoverEffects();
                     initAutoSliders();
 
+                    // Tiny pause prevents Render's proxy from clumping responses, creating a smooth cascade
+                    await new Promise(resolve => setTimeout(resolve, 150));
+
                 } catch (secErr) {
                     console.error(`Failed to load section ${sec.section_id}:`, secErr);
                 }
-            });
+            }
 
             if (window.location.hash) {
                 setTimeout(() => {
@@ -360,7 +355,7 @@ document.addEventListener("DOMContentLoaded", () => {
         typing();
     }
 
-    // --- AUTO SLIDERS BOUND TO SCROLL VIEW (INTERSECTION OBSERVER) -->
+    // --- AUTO SLIDERS BOUND TO SCROLL VIEW (INTERSECTION OBSERVER) ---
     function initAutoSliders() {
         const sliders = document.querySelectorAll(".grid-container:not(.detail-split-layout)");
         
@@ -405,7 +400,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         function stopSlider(slider) {
-            if (slider.dataset.initialIntervalId || slider.dataset.intervalId) {
+            if (slider.dataset.intervalId) {
                 clearInterval(slider.dataset.intervalId);
                 slider.dataset.intervalId = "";
             }

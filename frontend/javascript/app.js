@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener("DOMContentLoaded", () => {
     const hasMouse = window.matchMedia("(pointer: fine)").matches;
     let cursor = document.querySelector(".custom-cursor");
 
@@ -39,19 +39,21 @@ document.addEventListener("DOMContentLoaded", async () => {
             card.classList.add("glass-tile");
 
             card.addEventListener("mousemove", (e) => {
-                const rect = card.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
+                window.requestAnimationFrame(() => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
 
-                card.style.setProperty('--mouse-x', `${x}px`);
-                card.style.setProperty('--mouse-y', `${y}px`);
+                    card.style.setProperty('--mouse-x', `${x}px`);
+                    card.style.setProperty('--mouse-y', `${y}px`);
 
-                const centerX = rect.width / 2;
-                const centerY = rect.height / 2;
-                const rotateX = -((y - centerY) / centerY) * 8;
-                const rotateY = ((x - centerX) / centerX) * 8;
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    const rotateX = -((y - centerY) / centerY) * 6;
+                    const rotateY = ((x - centerX) / centerX) * 6;
 
-                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+                    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+                });
             });
 
             card.addEventListener("mouseleave", () => {
@@ -99,19 +101,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     function renderDualMarqueeSkills(skillsList) {
         if (!skillsList || skillsList.length === 0) return "";
         
-        // Split skills roughly into two arrays for upper and lower rows
         const mid = Math.ceil(skillsList.length / 2);
         const upperSkills = skillsList.slice(0, mid);
         const lowerSkills = skillsList.slice(mid);
 
-        // Helper to generate a repeated block of pills for seamless looping
         const generatePillsHtml = (arr) => {
             let pillsStr = "";
             arr.forEach(skill => {
                 const skillName = typeof skill === "object" ? skill.name : skill;
                 pillsStr += `<span class="skill-pill">${skillName}</span>`;
             });
-            // Duplicate pills to create a seamless infinite scroll effect
             return pillsStr + pillsStr;
         };
 
@@ -127,7 +126,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         `;
     }
 
-    // --- STANDARD HOME PAGE GRID CARD RENDERER ---
     function renderHomeGridItems(items, sec) {
         if (items.length === 0) return `<p style="color: var(--text-muted); margin-top: 1rem;">No items added yet.</p>`;
         let html = `<div class="grid-container">`;
@@ -162,13 +160,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         return html;
     }
 
-    // --- UNIVERSAL DETAIL PAGE RENDERER ---
     function renderUniversalDetailItems(items) {
         if (items.length === 0) return `<p style="color: var(--text-muted); margin-top: 1rem;">No items added yet.</p>`;
         let html = `<div class="grid-container detail-split-layout">`;
         items.forEach(item => {
             html += `<div class="detail-card-row" data-id="${item._id}"><div class="detail-card-content">`;
-            
             html += `<div class="detail-heading-wrapper"><span class="bullet"></span><h3 class="detail-title">${item.title}</h3></div>`;
             
             if (item.subtitle) {
@@ -194,136 +190,133 @@ document.addEventListener("DOMContentLoaded", async () => {
         return html;
     }
 
-    async function renderDynamicContent() {
+    // --- PROGRESSIVE STREAMING RENDER ARCHITECTURE ---
+    async function loadPageProgressively() {
         if (!container) return;
 
+        // 1. INSTANTLY RENDER THE APP SHELL (0ms Delay)
+        if (pageName === "home") {
+            container.innerHTML = `
+                <section class="hero">
+                    <h1 class="hero-title">AI/ML & n8n<br><span id="typewriter" class="typed-text"></span></h1>
+                    <p class="hero-subtitle">BS Artificial Intelligence student at UMT Lahore focused on machine learning, data analytics, and AI-driven automation workflows.</p>
+                    <div class="action-buttons">
+                        <a href="/api/cv/download" id="download-cv-btn" class="btn-primary">Download CV</a>
+                        <a href="/lets-talk" class="btn-secondary">Let's Talk →</a>
+                    </div>
+                </section>
+                <div id="dynamic-portfolio-sections"></div>
+            `;
+            initTypewriter(); 
+        } else {
+            let pageTitle = "Experience";
+            let pageSubtitle = "Professional internships, leadership roles, and military recommendations.";
+            if (pageName === "projects") {
+                pageTitle = "Featured Projects";
+                pageSubtitle = "Deep learning models, automated data pipelines, and full-stack software prototypes.";
+            } else if (pageName === "community") {
+                pageTitle = "Community Work";
+                pageSubtitle = "Leadership, event management, and volunteer contributions.";
+            } else if (pageName === "research") {
+                pageTitle = "Research & Publications";
+                pageSubtitle = "Academic studies, technical reports, and scientific papers.";
+            }
+
+            container.innerHTML = `
+                <div style="margin-bottom: 4rem;">
+                    <h1 style="font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 700; letter-spacing: -1.5px; margin-bottom: 0.75rem;">${pageTitle}.</h1>
+                    <p style="color: var(--text-muted); font-size: 1.15rem; max-width: 700px;">${pageSubtitle}</p>
+                </div>
+                <div id="dynamic-portfolio-sections"></div>
+            `;
+        }
+
+        const dynamicContainer = document.getElementById("dynamic-portfolio-sections");
+
+        // 2. FETCH SECTIONS METADATA AND STREAM INDIVIDUALLY
         try {
             const res = await fetch(`/api/pages/${pageName}/sections`);
             let sections = await res.json();
             sections.sort((a, b) => (a.order || 0) - (b.order || 0));
 
-            if (sections.length === 0) {
-                if (pageName === "home") {
-                    renderDefaultHomeSkeleton();
-                } else {
-                    container.innerHTML = `<div style="padding: 4rem; text-align: center; color: var(--text-muted);"><h2>No sections configured yet for this page.</h2><p>Use the admin panel to add sections and items.</p></div>`;
-                }
+            if (sections.length === 0 && pageName !== "home") {
+                dynamicContainer.innerHTML = `<div style="padding: 4rem; text-align: center; color: var(--text-muted);"><h2>No sections configured yet for this page.</h2></div>`;
                 return;
             }
 
-            let htmlOutput = "";
+            // Create placeholder slots instantly to prevent layout jump
+            sections.forEach(sec => {
+                const placeholder = document.createElement("div");
+                placeholder.id = `section-slot-${sec.section_id}`;
+                placeholder.style.opacity = "0";
+                placeholder.style.transform = "translateY(20px)";
+                placeholder.style.transition = "opacity 0.6s ease, transform 0.6s ease";
+                dynamicContainer.appendChild(placeholder);
+            });
 
-            if (pageName === "home") {
-                htmlOutput += `
-                    <section class="hero">
-                        <h1 class="hero-title">AI/ML & n8n<br><span id="typewriter" class="typed-text"></span></h1>
-                        <p class="hero-subtitle">BS Artificial Intelligence student at UMT Lahore focused on machine learning, data analytics, and AI-driven automation workflows.</p>
-                        <div class="action-buttons">
-                            <a href="/api/cv/download" id="download-cv-btn" class="btn-primary">Download CV</a>
-                            <a href="/lets-talk" class="btn-secondary">Let's Talk →</a>
-                        </div>
-                    </section>
-                `;
-            } else {
-                let pageTitle = "Experience";
-                let pageSubtitle = "Professional internships, leadership roles, and military recommendations.";
+            // Stream each section independently as its data resolves
+            sections.forEach(async (sec) => {
+                const slot = document.getElementById(`section-slot-${sec.section_id}`);
+                if (!slot) return;
 
-                if (pageName === "projects") {
-                    pageTitle = "Featured Projects";
-                    pageSubtitle = "Deep learning models, automated data pipelines, and full-stack software prototypes.";
-                } else if (pageName === "community") {
-                    pageTitle = "Community Work";
-                    pageSubtitle = "Leadership, event management, and volunteer contributions.";
-                } else if (pageName === "research") {
-                    pageTitle = "Research & Publications";
-                    pageSubtitle = "Academic studies, technical reports, and scientific papers.";
-                }
-
-                htmlOutput += `
-                    <div style="margin-bottom: 4rem;">
-                        <h1 style="font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 700; letter-spacing: -1.5px; margin-bottom: 0.75rem;">${pageTitle}.</h1>
-                        <p style="color: var(--text-muted); font-size: 1.15rem; max-width: 700px;">${pageSubtitle}</p>
-                    </div>
-                `;
-            }
-
-            for (const sec of sections) {
-                let items = [];
-                if (pageName === "home" && sec.mapped_page) {
-                    const mappedSecRes = await fetch(`/api/pages/${sec.mapped_page}/sections`);
-                    const mappedSections = await mappedSecRes.json();
-                    for (const mSec of mappedSections) {
-                        const itemRes = await fetch(`/api/items/${mSec.section_id}`);
-                        const mItems = await itemRes.json();
-                        items.push(...mItems);
+                try {
+                    let items = [];
+                    if (pageName === "home" && sec.mapped_page) {
+                        const mappedSecRes = await fetch(`/api/pages/${sec.mapped_page}/sections`);
+                        const mappedSections = await mappedSecRes.json();
+                        for (const mSec of mappedSections) {
+                            const itemRes = await fetch(`/api/items/${mSec.section_id}`);
+                            const mItems = await itemRes.json();
+                            items.push(...mItems);
+                        }
+                    } else {
+                        const itemsRes = await fetch(`/api/items/${sec.section_id}`);
+                        items = await itemsRes.json();
                     }
-                } else {
-                    const itemsRes = await fetch(`/api/items/${sec.section_id}`);
-                    items = await itemsRes.json();
-                }
-                items.sort((a, b) => (a.order || 0) - (b.order || 0));
+                    items.sort((a, b) => (a.order || 0) - (b.order || 0));
 
-                if (pageName === "home") {
-                    htmlOutput += `
-                        <section id="${sec.section_id}" class="portfolio-section">
-                            <div class="section-header"><span class="bullet"></span><h2>${sec.title}</h2></div>
-                    `;
-                    if (sec.is_skills) {
-                        const skillsRes = await fetch("/api/skills");
-                        const skills = await skillsRes.json();
-                        const skillNames = skills.length > 0 ? skills.map(s => s.name) : ["Python", "FastAPI", "Flutter", "TensorFlow & Keras", "n8n Automation", "Docker", "MongoDB Atlas", "SQL & Databases", "Groq & X.AI APIs", "Git & GitHub"];
-                        htmlOutput += renderDualMarqueeSkills(skillNames);
-                        htmlOutput += `</section>`;
-                        continue;
+                    let sectionHtml = "";
+                    if (pageName === "home") {
+                        sectionHtml = `<section id="${sec.section_id}" class="portfolio-section"><div class="section-header"><span class="bullet"></span><h2>${sec.title}</h2></div>`;
+                        if (sec.is_skills) {
+                            const skillsRes = await fetch("/api/skills");
+                            const skills = await skillsRes.json();
+                            const skillNames = skills.length > 0 ? skills.map(s => s.name) : ["Python", "FastAPI", "Flutter", "Docker", "MongoDB Atlas"];
+                            sectionHtml += renderDualMarqueeSkills(skillNames);
+                            sectionHtml += `</section>`;
+                        } else {
+                            sectionHtml += renderHomeGridItems(items, sec);
+                            sectionHtml += `</section>`;
+                        }
+                    } else {
+                        sectionHtml = `<section id="${sec.section_id}" class="portfolio-section">`;
+                        sectionHtml += renderUniversalDetailItems(items);
+                        sectionHtml += `</section>`;
                     }
-                    htmlOutput += renderHomeGridItems(items, sec);
-                } else {
-                    htmlOutput += `<section id="${sec.section_id}" class="portfolio-section">`;
-                    htmlOutput += renderUniversalDetailItems(items);
+
+                    slot.innerHTML = sectionHtml;
+                    slot.style.opacity = "1";
+                    slot.style.transform = "translateY(0)";
+
+                    if (pageName === "home") setupGlassTiltEffects();
+                    setupGlobalHoverEffects();
+                    initAutoSliders();
+
+                } catch (secErr) {
+                    console.error(`Failed to load section ${sec.section_id}:`, secErr);
                 }
-
-                htmlOutput += `</section>`;
-            }
-
-            container.innerHTML = htmlOutput;
-
-            if (pageName === "home") {
-                initTypewriter();
-                setupGlassTiltEffects();
-            }
-            setupGlobalHoverEffects();
-            setupScrollAnimations();
-            initAutoSliders();
+            });
 
             if (window.location.hash) {
                 setTimeout(() => {
                     const targetEl = document.querySelector(window.location.hash);
-                    if (targetEl) {
-                        targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }
+                    if (targetEl) targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }, 400);
             }
 
         } catch (err) {
             console.error("Error loading dynamic portfolio data:", err);
         }
-    }
-
-    function renderDefaultHomeSkeleton() {
-        container.innerHTML = `
-            <section class="hero">
-                <h1 class="hero-title">AI/ML & n8n<br><span id="typewriter" class="typed-text"></span></h1>
-                <p class="hero-subtitle">BS Artificial Intelligence student at UMT Lahore focused on machine learning, data analytics, and AI-driven automation workflows.</p>
-                <div class="action-buttons">
-                    <a href="/api/cv/download" id="download-cv-btn" class="btn-primary">Download CV</a>
-                    <a href="/lets-talk" class="btn-secondary">Let's Talk →</a>
-                </div>
-            </section>
-            <div style="padding: 3rem; text-align: center; color: var(--text-muted);">
-                <p>No dynamic sections created for Home page yet. Head over to <a href="/admin" style="color: var(--accent-color);">/admin</a> to add sections and items!</p>
-            </div>
-        `;
-        initTypewriter();
     }
 
     function initTypewriter() {
@@ -358,7 +351,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     setTimeout(typing, 500);
                     return;
                 }
-                timer = setTimeout(loopDeleting, 80);
+                timer = setTimeout(loopDeleting, 60);
             };
             loopDeleting();
         }
@@ -366,54 +359,58 @@ document.addEventListener("DOMContentLoaded", async () => {
         typing();
     }
 
-    function setupScrollAnimations() {
-        const observer = new IntersectionObserver((entries, observer) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.opacity = "1";
-                    entry.target.style.transform = "translateY(0)";
-                    observer.unobserve(entry.target);
-                }
-            });
-        }, { threshold: 0.1 });
-
-        document.querySelectorAll(".portfolio-section, .detail-card-row, .project-card").forEach((section) => {
-            section.style.opacity = "0";
-            section.style.transform = "translateY(30px)";
-            section.style.transition = "opacity 0.8s ease, transform 0.8s ease";
-            observer.observe(section);
-        });
-    }
-
+    // --- AUTO SLIDERS BOUND TO SCROLL VIEW (INTERSECTION OBSERVER) ---
     function initAutoSliders() {
         const sliders = document.querySelectorAll(".grid-container:not(.detail-split-layout)");
+        
+        const sliderObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                const slider = entry.target;
+                if (entry.isIntersecting) {
+                    startSlider(slider);
+                } else {
+                    stopSlider(slider);
+                }
+            });
+        }, { threshold: 0.2 });
+
         sliders.forEach(slider => {
-            let interval = setInterval(() => {
+            sliderObserver.observe(slider);
+
+            slider.addEventListener("mouseenter", () => stopSlider(slider));
+            slider.addEventListener("mouseleave", () => {
+                const rect = slider.getBoundingClientRect();
+                const isVisible = (rect.top < window.innerHeight && rect.bottom >= 0);
+                if (isVisible) startSlider(slider);
+            });
+        });
+
+        function startSlider(slider) {
+            if (slider.dataset.intervalId) return;
+            
+            const id = setInterval(() => {
                 const card = slider.querySelector(".project-card");
                 if (!card) return;
-                const cardWidth = card.offsetWidth + 32;
+                const cardWidth = card.offsetWidth + 32; 
+                
                 if (slider.scrollLeft + slider.clientWidth >= slider.scrollWidth - 10) {
                     slider.scrollTo({ left: 0, behavior: 'smooth' });
                 } else {
                     slider.scrollBy({ left: cardWidth, behavior: 'smooth' });
                 }
-            }, 2000);
+            }, 2500); 
+            
+            slider.dataset.intervalId = id;
+        }
 
-            slider.addEventListener("mouseenter", () => clearInterval(interval));
-            slider.addEventListener("mouseleave", () => {
-                interval = setInterval(() => {
-                    const card = slider.querySelector(".project-card");
-                    if (!card) return;
-                    const cardWidth = card.offsetWidth + 32;
-                    if (slider.scrollLeft + slider.clientWidth >= slider.scrollWidth - 10) {
-                        slider.scrollTo({ left: 0, behavior: 'smooth' });
-                    } else {
-                        slider.scrollBy({ left: cardWidth, behavior: 'smooth' });
-                    }
-                }, 2000);
-            });
-        });
+        function stopSlider(slider) {
+            if (slider.dataset.intervalId) {
+                clearInterval(slider.dataset.intervalId);
+                slider.dataset.intervalId = "";
+            }
+        }
     }
 
-    await renderDynamicContent();
+    // FIRE EVERYTHING!
+    loadPageProgressively();
 });

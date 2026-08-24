@@ -190,7 +190,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return html;
     }
 
-    // --- SEQUENTIAL PROGRESSIVE STREAMING RENDER ARCHITECTURE ---
+    // --- CONCURRENT INDEPENDENT STREAMING ARCHITECTURE ---
     async function loadPageProgressively() {
         if (!container) return;
 
@@ -233,7 +233,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const dynamicContainer = document.getElementById("dynamic-portfolio-sections");
 
-        // 2. FETCH SECTIONS METADATA AND STREAM SEQUENTIALLY IN ORDER
+        // 2. FETCH SECTIONS METADATA AND STREAM INDEPENDENTLY AS DATA ARRIVES
         try {
             const res = await fetch(`/api/pages/${pageName}/sections`);
             let sections = await res.json();
@@ -244,7 +244,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            // Create placeholder slots instantly in correct sorted order
+            // Create placeholder slots instantly in correct sorted order to preserve layout
             sections.forEach(sec => {
                 const placeholder = document.createElement("div");
                 placeholder.id = `section-slot-${sec.section_id}`;
@@ -254,10 +254,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 dynamicContainer.appendChild(placeholder);
             });
 
-            // Use a sequential 'for...of' loop so sections render strictly one-by-one in order
-            for (const sec of sections) {
+            // Fire independent async fetches so each section renders the exact microsecond its data resolves
+            sections.forEach(async (sec) => {
                 const slot = document.getElementById(`section-slot-${sec.section_id}`);
-                if (!slot) continue;
+                if (!slot) return;
 
                 try {
                     let items = [];
@@ -294,7 +294,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         sectionHtml += `</section>`;
                     }
 
-                    // Populate slot and smoothly fade it in
+                    // Render this specific section immediately upon completion
                     slot.innerHTML = sectionHtml;
                     slot.style.opacity = "1";
                     slot.style.transform = "translateY(0)";
@@ -306,7 +306,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 } catch (secErr) {
                     console.error(`Failed to load section ${sec.section_id}:`, secErr);
                 }
-            }
+            });
 
             if (window.location.hash) {
                 setTimeout(() => {
@@ -360,7 +360,7 @@ document.addEventListener("DOMContentLoaded", () => {
         typing();
     }
 
-    // --- AUTO SLIDERS BOUND TO SCROLL VIEW (INTERSECTION OBSERVER) ---
+    // --- AUTO SLIDERS BOUND TO SCROLL VIEW (INTERSECTION OBSERVER) -->
     function initAutoSliders() {
         const sliders = document.querySelectorAll(".grid-container:not(.detail-split-layout)");
         
@@ -405,7 +405,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         function stopSlider(slider) {
-            if (slider.dataset.intervalId) {
+            if (slider.dataset.initialIntervalId || slider.dataset.intervalId) {
                 clearInterval(slider.dataset.intervalId);
                 slider.dataset.intervalId = "";
             }

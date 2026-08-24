@@ -41,7 +41,7 @@
         <!-- Sections will be rendered here dynamically -->
         <main id="dynamic-container">
         <section class="hero">
-            <h1 class="hero-title">AI/ML & n8n<br><span id="typewriter" class="typed-text"></span></h1>
+            <h1 class="hero-title">AI/ML & n8n<br><span id="typewriter" class="typed-text">Developer.</span></h1>
             <p class="hero-subtitle">BS Artificial Intelligence student at UMT Lahore focused on machine learning, data analytics, and AI-driven automation workflows.</p>
             <div class="action-buttons">
                 <a href="/api/cv/download" id="download-cv-btn" class="btn-primary">Download CV</a>
@@ -74,5 +74,55 @@
     </footer>
 
     <script src="javascript/app.js"></script>
+    <script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const element = document.getElementById("typewriter");
+        if (!element) return;
+
+        const words = ["Developer.", "Engineer.", "Automator."];
+        let i = 0;
+
+        setTimeout(() => {
+            let word = words[i].split("");
+            function loopDeleting() {
+                if (word.length > 0) {
+                    word.pop();
+                    element.textContent = word.join("");
+                    setTimeout(loopDeleting, 60);
+                } else {
+                    i = (i + 1) % words.length;
+                    setTimeout(typing, 500);
+                }
+            }
+            loopDeleting();
+        }, 2000);
+
+        function typing() {
+            let word = words[i].split("");
+            function loopTyping() {
+                if (word.length > 0) {
+                    element.textContent += word.shift();
+                    setTimeout(loopTyping, 120);
+                } else {
+                    setTimeout(() => {
+                        let delWord = words[i].split("");
+                        function loopDeleting2() {
+                            if (delWord.length > 0) {
+                                delWord.pop();
+                                element.textContent = delWord.join("");
+                                setTimeout(loopDeleting2, 60);
+                            } else {
+                                i = (i + 1) % words.length;
+                                setTimeout(typing, 500);
+                            }
+                        }
+                        loopDeleting2();
+                    }, 2000);
+                }
+            }
+            loopTyping();
+        }
+    });
+</script>
 </body>
 </html>

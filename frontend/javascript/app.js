@@ -196,7 +196,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Since the hero is now hardcoded in HTML, just initialize the typewriter effect
         if (pageName === "home") {
-            initTypewriter();
+            
         } else {
             let pageTitle = "Experience";
             let pageSubtitle = "Professional internships, leadership roles, and military recommendations.";
@@ -315,45 +315,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    function initTypewriter() {
-        const words = ["Developer.", "Engineer.", "Automator."];
-        let i = 0;
-        let timer;
-        const element = document.getElementById("typewriter");
-        if (!element) return;
 
-        function typing() {
-            let word = words[i].split("");
-            let loopTyping = function() {
-                if (word.length > 0) {
-                    element.textContent += word.shift();
-                } else {
-                    setTimeout(deleting, 2000);
-                    return;
-                }
-                timer = setTimeout(loopTyping, 120);
-            };
-            loopTyping();
-        }
-
-        function deleting() {
-            let word = words[i].split("");
-            let loopDeleting = function() {
-                if (word.length > 0) {
-                    word.pop();
-                    element.textContent = word.join("");
-                } else {
-                    i = (i + 1) % words.length;
-                    setTimeout(typing, 500);
-                    return;
-                }
-                timer = setTimeout(loopDeleting, 60);
-            };
-            loopDeleting();
-        }
-
-        typing();
-    }
 
     // --- AUTO SLIDERS BOUND TO SCROLL VIEW (INTERSECTION OBSERVER) ---
     function initAutoSliders() {

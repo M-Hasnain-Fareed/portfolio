@@ -190,7 +190,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return html;
     }
 
-    // --- PROGRESSIVE STREAMING RENDER ARCHITECTURE ---
+    // --- SEQUENTIAL PROGRESSIVE STREAMING RENDER ARCHITECTURE ---
     async function loadPageProgressively() {
         if (!container) return;
 
@@ -233,7 +233,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const dynamicContainer = document.getElementById("dynamic-portfolio-sections");
 
-        // 2. FETCH SECTIONS METADATA AND STREAM INDIVIDUALLY
+        // 2. FETCH SECTIONS METADATA AND STREAM SEQUENTIALLY IN ORDER
         try {
             const res = await fetch(`/api/pages/${pageName}/sections`);
             let sections = await res.json();
@@ -244,7 +244,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            // Create placeholder slots instantly to prevent layout jump
+            // Create placeholder slots instantly in correct sorted order
             sections.forEach(sec => {
                 const placeholder = document.createElement("div");
                 placeholder.id = `section-slot-${sec.section_id}`;
@@ -254,10 +254,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 dynamicContainer.appendChild(placeholder);
             });
 
-            // Stream each section independently as its data resolves
-            sections.forEach(async (sec) => {
+            // Use a sequential 'for...of' loop so sections render strictly one-by-one in order
+            for (const sec of sections) {
                 const slot = document.getElementById(`section-slot-${sec.section_id}`);
-                if (!slot) return;
+                if (!slot) continue;
 
                 try {
                     let items = [];
@@ -294,6 +294,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         sectionHtml += `</section>`;
                     }
 
+                    // Populate slot and smoothly fade it in
                     slot.innerHTML = sectionHtml;
                     slot.style.opacity = "1";
                     slot.style.transform = "translateY(0)";
@@ -305,7 +306,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 } catch (secErr) {
                     console.error(`Failed to load section ${sec.section_id}:`, secErr);
                 }
-            });
+            }
 
             if (window.location.hash) {
                 setTimeout(() => {

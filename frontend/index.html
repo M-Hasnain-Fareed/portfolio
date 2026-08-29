@@ -10,7 +10,7 @@
 
     <!-- Navigation Bar -->
     <header class="navbar">
-        <div class="logo" id="home-btn" style="cursor: pointer;">HASNAIN FAREED</div>
+        <div class="logo" id="home-btn" style="cursor: pointer;" onclick="if(window.location.pathname === '/' || window.location.pathname.endsWith('index.html')) { window.scrollTo({top: 0, behavior: 'smooth'}); } else { window.location.href = '/'; }">HASNAIN FAREED</div>
         <nav class="nav-links">
             <a href="experience" class="hover-wipe">Experience</a>
             <a href="projects" class="hover-wipe">Projects</a>
@@ -59,6 +59,7 @@
             <!-- Dynamic details will load here -->
         </div>
     </section>
+    
 
     <!-- Footer -->
     <footer>

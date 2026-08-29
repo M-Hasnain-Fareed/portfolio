@@ -14,7 +14,6 @@ document.addEventListener("DOMContentLoaded", () => {
             cursor.style.top = `${e.pageY}px`;
         });
     }
-    
     function setupGlobalHoverEffects() {
         if (!hasMouse) return;
         const interactiveElements = document.querySelectorAll(".project-card, .detail-card-row, .skill-pill, .tag, a, button");

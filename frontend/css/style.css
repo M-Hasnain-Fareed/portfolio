@@ -291,12 +291,15 @@ body {
     background: transparent;
     border: none;
     padding: 0;
+    position: relative;
 }
 
 .detail-card-content {
     display: flex;
     flex-direction: column;
     justify-content: center;
+    position: relative;
+    padding-bottom: 4.5rem; /* Leaves dedicated breathing room for the absolute links */
 }
 
 .detail-card-media {
@@ -627,8 +630,6 @@ footer {
     100% { transform: translateX(-50%); }
 }
 
-
-
 .contact-email-btn {
     background-color: var(--accent-color);
     color: #fff;
@@ -648,4 +649,61 @@ footer {
 .contact-email-btn:hover {
     transform: translateY(-2px);
     opacity: 0.9;
+}
+
+/* Ensure project cards have relative positioning and bottom space for absolute links */
+.project-card {
+    position: relative;
+    padding-bottom: 5rem !important; 
+}
+
+/* Card Bottom-Right Links Positioning & Styling (Works for both home cards and detail rows) */
+.card-bottom-links {
+    position: absolute;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    display: flex;
+    gap: 0.5rem;
+    z-index: 5;
+}
+
+/* Universal override for detail page content block links container */
+.detail-card-content .card-bottom-links {
+    position: absolute;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    left: auto;
+}
+
+.card-badge-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 0.45rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    backdrop-filter: blur(6px);
+}
+
+.card-badge-link:hover {
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+    background: rgba(255, 51, 51, 0.05);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 51, 51, 0.15);
+}
+/* Left-aligned links specifically for detail pages */
+.detail-card-links {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-start;
+    margin-top: 1.5rem;
+    z-index: 5;
 }

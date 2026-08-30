@@ -134,6 +134,15 @@
                     <input type="text" id="item-skills" placeholder="Skill Tags (comma separated, e.g. Python, FastAPI)" style="width: 100%; padding: 0.75rem; background: var(--bg-color); border: 1px solid var(--border-color); color: #fff; border-radius: 8px;">
                 </div>
 
+                <!-- Card Top-Right Links Manager -->
+                <div style="border-top: 1px solid var(--border-color); padding-top: 1rem; margin-top: 0.5rem;">
+                    <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.4rem;">Card Action Links (e.g. GitHub, Live Website, LinkedIn)</label>
+                    <div id="item-links-container" style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 0.75rem;">
+                        <!-- Dynamic link rows will be added here -->
+                    </div>
+                    <button type="button" id="add-item-link-btn" style="background: transparent; border: 1px dashed var(--accent-color); color: var(--accent-color); font-weight: 500; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.85rem;">+ Add Link Button</button>
+                </div>
+
                 <div>
                     <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.4rem;">Detailed Description</label>
                     <textarea id="item-desc" rows="4" placeholder="Detailed description..." required style="width: 100%; padding: 0.75rem; background: var(--bg-color); border: 1px solid var(--border-color); color: #fff; border-radius: 8px; resize: vertical;"></textarea>
@@ -222,6 +231,16 @@
                         <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.4rem;">Skill Tags (comma separated)</label>
                         <input type="text" id="edit-item-skills" style="width: 100%; padding: 0.75rem; background: var(--bg-color); border: 1px solid var(--border-color); color: #fff; border-radius: 8px;">
                     </div>
+                    
+                    <!-- Edit Modal Card Links Manager -->
+                    <div>
+                        <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.4rem;">Card Action Links</label>
+                        <div id="edit-item-links-container" style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 0.75rem;">
+                            <!-- Dynamic link rows will be added here -->
+                        </div>
+                        <button type="button" id="edit-add-item-link-btn" style="background: transparent; border: 1px dashed var(--accent-color); color: var(--accent-color); font-weight: 500; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.85rem;">+ Add Link Button</button>
+                  </div>
+
                     <div>
                         <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.4rem;">Detailed Description</label>
                         <textarea id="edit-item-desc" rows="4" style="width: 100%; padding: 0.75rem; background: var(--bg-color); border: 1px solid var(--border-color); color: #fff; border-radius: 8px; resize: vertical;"></textarea>

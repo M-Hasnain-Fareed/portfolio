@@ -17,6 +17,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const sectionSkillsInputWrapper = document.getElementById("section-skills-input-wrapper");
     const secMappedPageSelect = document.getElementById("sec-mapped-page");
 
+    // Dynamic Card Links Manager elements (Add Form)
+    const itemLinksContainer = document.getElementById("item-links-container");
+    const addItemLinkBtn = document.getElementById("add-item-link-btn");
+
+    // Dynamic Card Links Manager elements (Edit Modal Form)
+    const editItemLinksContainer = document.getElementById("edit-item-links-container");
+    const editAddItemLinkBtn = document.getElementById("edit-add-item-link-btn");
+
     if (secIsSkillsSelect) {
         secIsSkillsSelect.addEventListener("change", () => {
             if (secIsSkillsSelect.value === "true") {
@@ -28,6 +36,74 @@ document.addEventListener("DOMContentLoaded", () => {
                 secMappedPageSelect.disabled = false;
             }
         });
+    }
+
+    // Helper to render a link input row dynamically
+    function createLinkRow(container, label = "", url = "", type = "live") {
+        const row = document.createElement("div");
+        row.style.cssText = "display: flex; gap: 0.5rem; align-items: center; background: var(--bg-color); padding: 0.5rem; border-radius: 8px; border: 1px solid var(--border-color);";
+        
+        row.innerHTML = `
+            <select class="link-type-select" style="padding: 0.5rem; background: var(--card-bg); border: 1px solid var(--border-color); color: #fff; border-radius: 6px; font-size: 0.85rem;">
+                <option value="live" ${type === "live" ? "selected" : ""}>Live Website</option>
+                <option value="github" ${type === "github" ? "selected" : ""}>GitHub</option>
+                <option value="linkedin" ${type === "linkedin" ? "selected" : ""}>LinkedIn</option>
+            </select>
+            <input type="text" class="link-label-input" placeholder="Label (e.g. Live, GitHub)" value="${label}" style="width: 110px; padding: 0.5rem; background: var(--card-bg); border: 1px solid var(--border-color); color: #fff; border-radius: 6px; font-size: 0.85rem;">
+            <input type="url" class="link-url-input" placeholder="https://..." value="${url}" style="flex: 1; padding: 0.5rem; background: var(--card-bg); border: 1px solid var(--border-color); color: #fff; border-radius: 6px; font-size: 0.85rem;">
+            <button type="button" class="remove-link-row" style="background: rgba(255,0,0,0.1); color: #ff6b6b; border: 1px solid rgba(255,0,0,0.3); padding: 0.4rem 0.6rem; border-radius: 6px; cursor: pointer; font-size: 0.85rem;">&times;</button>
+        `;
+
+        row.querySelector(".remove-link-row").addEventListener("click", () => {
+            row.remove();
+        });
+
+        // Auto-fill label default when type changes if label is empty or matches previous type
+        const typeSelect = row.querySelector(".link-type-select");
+        const labelInput = row.querySelector(".link-label-input");
+        typeSelect.addEventListener("change", () => {
+            if (!labelInput.value || labelInput.value === "Live" || labelInput.value === "GitHub" || labelInput.value === "LinkedIn") {
+                if (typeSelect.value === "live") labelInput.value = "Live";
+                if (typeSelect.value === "github") labelInput.value = "GitHub";
+                if (typeSelect.value === "linkedin") labelInput.value = "LinkedIn";
+            }
+        });
+
+        container.appendChild(row);
+    }
+
+    if (addItemLinkBtn) {
+        addItemLinkBtn.addEventListener("click", () => {
+            createLinkRow(itemLinksContainer, "Live", "", "live");
+        });
+    }
+
+    if (editAddItemLinkBtn) {
+        editAddItemLinkBtn.addEventListener("click", () => {
+            createLinkRow(editItemLinksContainer, "Live", "", "live");
+        });
+    }
+
+    // Helper to gather links from a container into an array of objects
+    function collectLinksFromContainer(container) {
+        const rows = container.querySelectorAll("div");
+        const links = [];
+        rows.forEach(row => {
+            const typeSelect = row.querySelector(".link-type-select");
+            const labelInput = row.querySelector(".link-label-input");
+            const urlInput = row.querySelector(".link-url-input");
+            if (typeSelect && labelInput && urlInput) {
+                const url = urlInput.value.trim();
+                if (url) {
+                    links.push({
+                        label: labelInput.value.trim() || "Link",
+                        url: url,
+                        type: typeSelect.value
+                    });
+                }
+            }
+        });
+        return links;
     }
 
     // Modal Elements
@@ -184,6 +260,10 @@ document.addEventListener("DOMContentLoaded", () => {
         formData.append("description", document.getElementById("item-desc").value);
         formData.append("order", document.getElementById("item-order").value);
 
+        // Collect card links and append as JSON string
+        const links = collectLinksFromContainer(itemLinksContainer);
+        formData.append("links", JSON.stringify(links));
+
         const imageFile = document.getElementById("item-image").files[0];
         if (imageFile) {
             formData.append("image", imageFile);
@@ -197,6 +277,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (res.ok) {
             alert("Portfolio item saved successfully!");
             itemForm.reset();
+            itemLinksContainer.innerHTML = "";
         } else {
             alert("Failed to save item.");
         }
@@ -216,6 +297,7 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById("edit-sec-order").value = sec.order;
             document.getElementById("remove-image-flag").value = "false";
             document.getElementById("edit-item-image").value = "";
+            editItemLinksContainer.innerHTML = "";
 
             if (pageName === "home") {
                 editHomeOptions.style.display = "flex";
@@ -246,6 +328,13 @@ document.addEventListener("DOMContentLoaded", () => {
                     document.getElementById("edit-item-meta").value = (item.meta_tags || []).join(", ");
                     document.getElementById("edit-item-skills").value = (item.skills || []).join(", ");
                     document.getElementById("edit-item-desc").value = item.description || "";
+
+                    // Populate existing links
+                    if (item.links && Array.isArray(item.links)) {
+                        item.links.forEach(l => {
+                            createLinkRow(editItemLinksContainer, l.label, l.url, l.type);
+                        });
+                    }
                 } else {
                     document.getElementById("edit-item-id").value = "";
                     document.getElementById("edit-item-title").value = "";
@@ -344,6 +433,10 @@ document.addEventListener("DOMContentLoaded", () => {
             formData.append("skills", document.getElementById("edit-item-skills").value);
             formData.append("description", document.getElementById("edit-item-desc").value);
             formData.append("order", document.getElementById("edit-sec-order").value);
+
+            // Collect card links from edit modal and append as JSON string
+            const links = collectLinksFromContainer(editItemLinksContainer);
+            formData.append("links", JSON.stringify(links));
 
             const imageFile = document.getElementById("edit-item-image").files[0];
             if (imageFile) {

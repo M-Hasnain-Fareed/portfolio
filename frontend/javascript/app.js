@@ -125,6 +125,29 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
     }
 
+    // Helper function to render card action links robustly
+    function renderCardLinks(links) {
+        if (!links || !Array.isArray(links) || links.length === 0) return "";
+        
+        let linksHtml = `<div class="card-bottom-links" style="display: flex; gap: 0.5rem; justify-content: flex-start; margin-top: 1.5rem; z-index: 5;">`;
+        links.forEach(link => {
+            let iconSvg = "";
+            const linkType = (link.type || "").toLowerCase();
+            
+            if (linkType === "github") {
+                iconSvg = `<svg height="16" width="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.22 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>`;
+            } else if (linkType === "linkedin") {
+                iconSvg = `<svg height="16" width="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/></svg>`;
+            } else {
+                iconSvg = `<svg height="15" width="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>`;
+            }
+
+            linksHtml += `<a href="${link.url}" target="_blank" rel="noopener noreferrer" class="card-badge-link" onclick="event.stopPropagation();">${link.label} ${iconSvg}</a>`;
+        });
+        linksHtml += `</div>`;
+        return linksHtml;
+    }
+
     function renderHomeGridItems(items, sec) {
         if (items.length === 0) return `<p style="color: var(--text-muted); margin-top: 1rem;">No items added yet.</p>`;
         let html = `<div class="grid-container">`;
@@ -132,9 +155,12 @@ document.addEventListener("DOMContentLoaded", () => {
             let clickAction = "";
             if (sec.mapped_page) {
                 const targetSecId = item.section_id || sec.mapped_page;
-                clickAction = `onclick="window.location.href='/${sec.mapped_page}#${targetSecId}'" style="cursor: pointer;"`;
+                clickAction = `onclick="window.location.href='/${sec.mapped_page}#${targetSecId}'" style="cursor: pointer; position: relative;"`;
+            } else {
+                clickAction = `style="position: relative;"`;
             }
             html += `<div class="project-card" data-id="${item._id}" ${clickAction}>`;
+            
             if (item.meta_tags && item.meta_tags.length > 0) {
                 html += `<div class="card-meta">`;
                 item.meta_tags.forEach(tag => html += `<span class="tag">${tag}</span>`);
@@ -153,6 +179,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 item.skills.forEach(skill => html += `<span style="font-size: 0.8rem; background: rgba(0, 255, 150, 0.08); border: 1px solid rgba(0, 255, 150, 0.2); color: #00ff96; padding: 0.2rem 0.6rem; border-radius: 4px;">${skill}</span>`);
                 html += `</div>`;
             }
+
+            // Render action links at the bottom-right of the card content
+            if (item.links && item.links.length > 0) {
+                html += renderCardLinks(item.links);
+            }
+
             html += `</div>`;
         });
         html += `</div>`;
@@ -164,6 +196,7 @@ document.addEventListener("DOMContentLoaded", () => {
         let html = `<div class="grid-container detail-split-layout">`;
         items.forEach(item => {
             html += `<div class="detail-card-row" data-id="${item._id}"><div class="detail-card-content">`;
+            
             html += `<div class="detail-heading-wrapper"><span class="bullet"></span><h3 class="detail-title">${item.title}</h3></div>`;
             
             if (item.subtitle) {
@@ -172,6 +205,7 @@ document.addEventListener("DOMContentLoaded", () => {
             
             html += `<p>${item.description}</p>`;
             
+            // 1. Meta tags / gray pills
             const tagsToDisplay = (item.skills && item.skills.length > 0) ? item.skills : item.meta_tags;
             if (tagsToDisplay && tagsToDisplay.length > 0) {
                 html += `<div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem;">`;
@@ -179,6 +213,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     html += `<span style="font-size: 0.8rem; background: rgba(0, 255, 150, 0.08); border: 1px solid rgba(0, 255, 150, 0.2); color: #00ff96; padding: 0.3rem 0.7rem; border-radius: 4px;">${tag}</span>`;
                 });
                 html += `</div>`;
+            }
+
+            // 2. RENDER LINKS DIRECTLY USING THE HELPER FUNCTION BELOW THE GREEN TAGS
+            if (item.links && item.links.length > 0) {
+                html += renderCardLinks(item.links);
             }
             
             html += `</div><div class="detail-card-media">`;
@@ -193,7 +232,6 @@ document.addEventListener("DOMContentLoaded", () => {
     async function loadPageProgressively() {
         if (!container) return;
 
-        // Since the hero is now hardcoded in HTML, just initialize the typewriter effect
         if (pageName === "home") {
             
         } else {
@@ -235,7 +273,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            // Create placeholder slots instantly in correct sorted order
             sections.forEach(sec => {
                 const placeholder = document.createElement("div");
                 placeholder.id = `section-slot-${sec.section_id}`;
@@ -245,7 +282,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 dynamicContainer.appendChild(placeholder);
             });
 
-            // Sequential loop with a micro-delay to bypass Render proxy batching and stream sections smoothly one by one
             for (const sec of sections) {
                 const slot = document.getElementById(`section-slot-${sec.section_id}`);
                 if (!slot) continue;
@@ -285,7 +321,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         sectionHtml += `</section>`;
                     }
 
-                    // Render and fade in this specific section immediately
                     slot.innerHTML = sectionHtml;
                     slot.style.opacity = "1";
                     slot.style.transform = "translateY(0)";
@@ -294,7 +329,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     setupGlobalHoverEffects();
                     initAutoSliders();
 
-                    // Tiny pause prevents Render's proxy from clumping responses, creating a smooth cascade
                     await new Promise(resolve => setTimeout(resolve, 150));
 
                 } catch (secErr) {
@@ -313,8 +347,6 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error("Error loading dynamic portfolio data:", err);
         }
     }
-
-
 
     // --- AUTO SLIDERS BOUND TO SCROLL VIEW (INTERSECTION OBSERVER) ---
     function initAutoSliders() {

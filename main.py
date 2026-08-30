@@ -2,6 +2,7 @@ import os
 import secrets
 import base64
 import httpx
+import json
 from fastapi import FastAPI, UploadFile, File, Form, Body, HTTPException, Depends, Cookie, Response, status
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, RedirectResponse
@@ -186,9 +187,10 @@ async def save_portfolio_item(
     subtitle: Optional[str] = Form(""),
     meta_tags: str = Form(""),
     skills: str = Form(""),
+    links: Optional[str] = Form("[]"),  # <--- Added to receive serialized links JSON string from admin.js
     description: str = Form(...),
     order: int = Form(0),
-    remove_image: Optional[str] = Form(None),  # <--- MOVED ABOVE IMAGE TO PREVENT PARSING DROPOFF
+    remove_image: Optional[str] = Form(None),
     image: Optional[UploadFile] = File(None),
     auth: bool = Depends(verify_admin)
 ):
@@ -221,12 +223,22 @@ async def save_portfolio_item(
     meta_list = [tag.strip() for tag in meta_tags.split(",") if tag.strip()]
     skills_list = [skill.strip() for skill in skills.split(",") if skill.strip()]
 
+    # Parse JSON links string safely
+    parsed_links = []
+    if links:
+        try:
+            parsed_links = json.loads(links)
+        except Exception as e:
+            print(f"Error parsing card links JSON: {e}")
+            parsed_links = []
+
     item_doc = {
         "section_id": section_id,
         "title": title,
         "subtitle": subtitle,
         "meta_tags": meta_list,
         "skills": skills_list,
+        "links": parsed_links,  # <--- Included links array into document
         "description": description,
         "order": order
     }

@@ -8,6 +8,12 @@ class PortfolioSection(BaseModel):
     title: str          # e.g., "Research Work & Publications"
     order: int = 0      # Precedence ordering (e.g., 1, 2, 3...)
 
+# Model for individual card links (e.g., GitHub, Live, LinkedIn)
+class PortfolioLink(BaseModel):
+    label: str          # e.g., "GitHub", "Live", "LinkedIn"
+    url: str            # e.g., "https://github.com/..."
+    type: str           # e.g., "github", "live", "linkedin"
+
 # Model for individual item cards belonging to any section
 class PortfolioItem(BaseModel):
     id: Optional[str] = Field(default=None, alias="_id")
@@ -18,6 +24,7 @@ class PortfolioItem(BaseModel):
     skills: List[str] = []
     description: str
     image_url: Optional[str] = ""
+    links: List[PortfolioLink] = []  # <--- Added to hold top-right card links
     order: int = 0
 
 # Model for Core Skills on the Home page

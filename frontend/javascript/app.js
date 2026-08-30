@@ -387,7 +387,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 } else {
                     slider.scrollBy({ left: cardWidth, behavior: 'smooth' });
                 }
-            }, 2500); 
+            }, 5000); 
             
             slider.dataset.intervalId = id;
         }
